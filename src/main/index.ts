@@ -1,74 +1,137 @@
-import { app, shell, BrowserWindow, ipcMain } from 'electron'
-import { join } from 'path'
-import { electronApp, optimizer, is } from '@electron-toolkit/utils'
+import { join } from 'node:path'
+import { electronApp, is, optimizer } from '@electron-toolkit/utils'
+import { app, BrowserWindow, ipcMain, Menu, nativeImage, shell, Tray } from 'electron'
 import icon from '../../resources/icon.png?asset'
+import type { AppSettings } from '../shared/print-types'
+import { LocalPrintServer } from './local-server'
+import { readSettings, saveSettings } from './settings-store'
+
+let mainWindow: BrowserWindow | null = null
+let tray: Tray | null = null
+let printServer: LocalPrintServer | null = null
+let settings: AppSettings
+let isQuitting = false
+
+function showMainWindow(): void {
+  if (!mainWindow || mainWindow.isDestroyed()) {
+    createWindow()
+    return
+  }
+  mainWindow.show()
+  mainWindow.focus()
+}
 
 function createWindow(): void {
-  // Create the browser window.
-  const mainWindow = new BrowserWindow({
-    width: 900,
-    height: 670,
+  mainWindow = new BrowserWindow({
+    title: 'mprint',
+    width: 1180,
+    height: 780,
+    minWidth: 920,
+    minHeight: 640,
     show: false,
     autoHideMenuBar: true,
+    backgroundColor: '#fafafa',
     ...(process.platform === 'linux' ? { icon } : {}),
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
-      sandbox: false
+      contextIsolation: true,
+      nodeIntegration: false,
+      sandbox: true
     }
   })
 
-  mainWindow.on('ready-to-show', () => {
-    mainWindow.show()
+  mainWindow.once('ready-to-show', () => mainWindow?.show())
+  mainWindow.on('close', (event) => {
+    if (!isQuitting && settings.closeToTray) {
+      event.preventDefault()
+      mainWindow?.hide()
+    }
   })
-
-  mainWindow.webContents.setWindowOpenHandler((details) => {
-    shell.openExternal(details.url)
+  mainWindow.on('closed', () => {
+    mainWindow = null
+  })
+  mainWindow.webContents.setWindowOpenHandler(({ url }) => {
+    void shell.openExternal(url)
     return { action: 'deny' }
   })
 
-  // HMR for renderer base on electron-vite cli.
-  // Load the remote URL for development or the local html file for production.
   if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
-    mainWindow.loadURL(process.env['ELECTRON_RENDERER_URL'])
+    void mainWindow.loadURL(process.env['ELECTRON_RENDERER_URL'])
   } else {
-    mainWindow.loadFile(join(__dirname, '../renderer/index.html'))
+    void mainWindow.loadFile(join(__dirname, '../renderer/index.html'))
   }
 }
 
-// This method will be called when Electron has finished
-// initialization and is ready to create browser windows.
-// Some APIs can only be used after this event occurs.
-app.whenReady().then(() => {
-  // Set app user model id for windows
-  electronApp.setAppUserModelId('com.electron')
+function createTray(): void {
+  if (tray) return
+  tray = new Tray(nativeImage.createFromPath(icon))
+  tray.setToolTip('mprint 本地打印服务')
+  tray.setContextMenu(
+    Menu.buildFromTemplate([
+      { label: '打开 mprint', click: showMainWindow },
+      { type: 'separator' },
+      {
+        label: '退出',
+        click: () => {
+          isQuitting = true
+          app.quit()
+        }
+      }
+    ])
+  )
+  tray.on('double-click', showMainWindow)
+}
 
-  // Default open or close DevTools by F12 in development
-  // and ignore CommandOrControl + R in production.
-  // see https://github.com/alex8088/electron-toolkit/tree/master/packages/utils
-  app.on('browser-window-created', (_, window) => {
-    optimizer.watchWindowShortcuts(window)
+function syncAutoLaunch(): void {
+  if (!app.isPackaged || (process.platform !== 'win32' && process.platform !== 'darwin')) return
+  app.setLoginItemSettings({ openAtLogin: settings.autoLaunch })
+}
+
+function registerIpcHandlers(): void {
+  ipcMain.handle('mprint:status', () => printServer?.getStatus())
+  ipcMain.handle('mprint:settings:get', () => settings)
+  ipcMain.handle('mprint:settings:save', async (_event, value: unknown) => {
+    settings = saveSettings(value)
+    syncAutoLaunch()
+    return printServer?.restart(settings)
+  })
+  ipcMain.handle('mprint:printers', () => printServer?.getPrinters())
+  ipcMain.handle('mprint:print', (_event, value: unknown) => printServer?.print(value))
+  ipcMain.handle('mprint:preview', (_event, value: unknown) => printServer?.preview(value))
+  ipcMain.handle('mprint:editor:open', async () => {
+    const status = printServer?.getStatus()
+    if (!status?.running) throw new Error(status?.lastError || '本地打印服务尚未启动。')
+    await shell.openExternal(status.editorUrl)
+  })
+}
+
+const hasSingleInstanceLock = app.requestSingleInstanceLock()
+if (!hasSingleInstanceLock) {
+  app.quit()
+} else {
+  app.on('second-instance', showMainWindow)
+
+  app.whenReady().then(async () => {
+    electronApp.setAppUserModelId('ink.yul.mprint')
+    app.on('browser-window-created', (_, window) => optimizer.watchWindowShortcuts(window))
+
+    settings = readSettings()
+    createWindow()
+    createTray()
+    syncAutoLaunch()
+
+    printServer = new LocalPrintServer(settings, () => mainWindow?.webContents ?? null)
+    registerIpcHandlers()
+    await printServer.start()
+
+    app.on('activate', showMainWindow)
   })
 
-  // IPC test
-  ipcMain.on('ping', () => console.log('pong'))
-
-  createWindow()
-
-  app.on('activate', function () {
-    // On macOS it's common to re-create a window in the app when the
-    // dock icon is clicked and there are no other windows open.
-    if (BrowserWindow.getAllWindows().length === 0) createWindow()
+  app.on('before-quit', () => {
+    isQuitting = true
   })
-})
 
-// Quit when all windows are closed, except on macOS. There, it's common
-// for applications and their menu bar to stay active until the user quits
-// explicitly with Cmd + Q.
-app.on('window-all-closed', () => {
-  if (process.platform !== 'darwin') {
-    app.quit()
-  }
-})
-
-// In this file you can include the rest of your app's specific main process
-// code. You can also put them in separate files and require them here.
+  app.on('window-all-closed', () => {
+    if (!settings?.closeToTray) app.quit()
+  })
+}

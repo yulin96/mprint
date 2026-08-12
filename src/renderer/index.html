@@ -1,40 +1,128 @@
 <!doctype html>
-<html>
+<html lang="zh-CN">
   <head>
     <meta charset="UTF-8" />
-    <title>Electron</title>
-    <!-- https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP -->
-    <meta
-      http-equiv="Content-Security-Policy"
-      content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:"
-    />
-
-    <link href="./assets/main.css" type="text/css" rel="stylesheet" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>mprint</title>
   </head>
-
   <body>
-    <div id="app">
-      <img alt="logo" class="logo" src="./assets/electron.svg" />
-      <div class="creator">Powered by electron-vite</div>
-      <div class="text">
-        Build an Electron app with
-        <span class="ts">TypeScript</span>
-      </div>
-      <p class="tip">Please try pressing <code>F12</code> to open the devTool</p>
-      <div class="actions">
-        <div class="action">
-          <a href="https://electron-vite.org/" target="_blank" rel="noreferrer">Documentation</a>
+    <div class="ambient-glow ambient-glow-left" aria-hidden="true"></div>
+    <div class="ambient-glow ambient-glow-right" aria-hidden="true"></div>
+    <div class="app-shell">
+      <header class="topbar">
+        <div class="brand-block">
+          <div class="brand-mark" aria-hidden="true">
+            <svg viewBox="0 0 32 32">
+              <path
+                d="M9 11V5h14v6M9 23H6a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h20a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-3"
+              />
+              <path d="M9 19h14v8H9zM23 15h.01" />
+            </svg>
+          </div>
+          <div>
+            <h1>mprint</h1>
+            <p>Windows 本地打印服务</p>
+          </div>
         </div>
-        <div class="action">
-          <a id="ipcHandler" target="_blank" rel="noreferrer">Send IPC</a>
+        <div id="headerStatus" class="status-chip is-loading">
+          <span class="status-dot"></span>
+          <span>正在检查服务</span>
         </div>
-      </div>
+      </header>
 
-      <ul class="versions">
-        <li class="electron-version"></li>
-        <li class="chrome-version"></li>
-        <li class="node-version"></li>
-      </ul>
+      <main>
+        <section class="service-overview">
+          <div class="service-primary">
+            <div class="service-state-line">
+              <h2 id="serviceState">检查中</h2>
+              <span id="serviceVersion" class="version-tag">v—</span>
+            </div>
+            <p id="serviceDescription" class="service-description">正在读取本地服务状态。</p>
+
+            <dl class="endpoint-list">
+              <div>
+                <dt>服务地址</dt>
+                <dd><code id="serviceAddress">127.0.0.1:17653</code></dd>
+              </div>
+              <div>
+                <dt>SDK 地址</dt>
+                <dd><code id="sdkAddress">http://127.0.0.1:17653/mprint.js</code></dd>
+              </div>
+            </dl>
+
+            <button id="openEditorButton" class="editor-launch-button" type="button">
+              <span>
+                <strong>打开模板编辑器</strong>
+                <small id="editorAddress">http://127.0.0.1:17653/editor/</small>
+              </span>
+              <svg class="launch-icon" viewBox="0 0 20 20" aria-hidden="true">
+                <path d="M7 5h8v8M15 5 5 15" />
+              </svg>
+            </button>
+          </div>
+
+          <form id="settingsForm" class="settings-form">
+            <div class="form-heading">
+              <h2>启动设置</h2>
+              <p>端口修改后会自动重启本地服务。</p>
+            </div>
+            <label class="field-label" for="portInput">服务端口</label>
+            <input id="portInput" name="port" type="number" min="1024" max="65535" required />
+            <label class="check-row">
+              <input id="autoLaunchInput" type="checkbox" />
+              <span>
+                <strong>登录 Windows 后自动启动</strong>
+                <small>开发模式下仅保存设置，安装版生效。</small>
+              </span>
+            </label>
+            <label class="check-row">
+              <input id="closeToTrayInput" type="checkbox" />
+              <span>
+                <strong>关闭窗口后继续运行</strong>
+                <small>可通过系统托盘重新打开。</small>
+              </span>
+            </label>
+            <div class="form-actions">
+              <span id="settingsMessage" class="inline-message" role="status"></span>
+              <button id="saveSettingsButton" class="primary-button" type="submit">保存设置</button>
+            </div>
+          </form>
+        </section>
+
+        <section class="content-section printers-section">
+          <div class="section-heading">
+            <div>
+              <h2>可用打印机</h2>
+              <p>调用时请使用系统名称 <code>name</code>。</p>
+            </div>
+            <button id="refreshPrintersButton" class="secondary-button" type="button">
+              刷新列表
+            </button>
+          </div>
+          <div id="printerList" class="printer-list" aria-live="polite">
+            <div class="empty-state">正在读取打印机列表…</div>
+          </div>
+        </section>
+
+        <section class="content-section sdk-section">
+          <div class="section-heading">
+            <div>
+              <h2>网页直接调用</h2>
+              <p>引入一次 SDK，业务代码直接调用一个 API。</p>
+            </div>
+            <button id="copyCodeButton" class="secondary-button" type="button">复制代码</button>
+          </div>
+          <pre
+            id="sdkCode"
+          ><code>&lt;script src="http://127.0.0.1:17653/mprint.js"&gt;&lt;/script&gt;
+&lt;script&gt;
+  await MPrint.print({
+    page: 'A4',
+    texts: [{ content: '测试打印', xMm: 20, yMm: 20, widthMm: 80, heightMm: 12 }]
+  })
+&lt;/script&gt;</code></pre>
+        </section>
+      </main>
     </div>
 
     <script type="module" src="./src/renderer.ts"></script>

@@ -1,34 +1,102 @@
 # mprint
 
-A minimal Electron application with TypeScript
+mprint 是一个面向 Windows 的本地打印服务。程序常驻系统托盘，在 `127.0.0.1` 启动 HTTP 服务；业务网页引入 JavaScript SDK 后，可直接调用 Windows 打印机。
 
-## Recommended IDE Setup
+项目地址：[github.com/yulin96/mprint](https://github.com/yulin96/mprint)
 
-- [VSCode](https://code.visualstudio.com/) + [ESLint](https://marketplace.visualstudio.com/items?itemName=dbaeumer.vscode-eslint) + [Prettier](https://marketplace.visualstudio.com/items?itemName=esbenp.prettier-vscode)
+## 功能
 
-## Project Setup
+- 一个 API 直接打印：`MPrint.print(request)`
+- 获取 Windows 打印机列表
+- 支持 A3/A4/A5/A6、照片纸和自定义毫米纸张
+- 支持毫米定位的文字、Data URL 图片、对齐、旋转和打印份数
+- 浏览器模板编辑器：配置纸张和元素、实时预览、拖动定位、复制调用代码
+- Windows 登录后自动启动、关闭到托盘和可配置服务端口
 
-### Install
+## 使用模板编辑器
 
-```bash
-$ npm install
+启动 mprint 后，在桌面配置面板点击“打开模板编辑器”。程序会使用系统默认浏览器打开：
+
+```text
+http://127.0.0.1:17653/editor/
 ```
 
-### Development
+编辑器左侧配置纸张、文字和图片，右侧实时显示打印结果。完成后点击“复制当前代码”，即可把生成的 `MPrint.print(...)` 调用粘贴到业务项目中。
 
-```bash
-$ npm run dev
+## 网页调用
+
+默认端口为 `17653`：
+
+```html
+<script src="http://127.0.0.1:17653/mprint.js"></script>
+<script>
+  await MPrint.print({
+    page: 'A4',
+    texts: [
+      {
+        content: '测试打印',
+        xMm: 20,
+        yMm: 20,
+        widthMm: 80,
+        heightMm: 12,
+        align: 'center'
+      }
+    ],
+    printer: {
+      silent: true,
+      copies: 1
+    }
+  })
+</script>
 ```
 
-### Build
+SDK API：
+
+- `MPrint.print(request)`：提交打印任务。
+- `MPrint.preview(request)`：打开独立打印结果预览。
+- `MPrint.getPrinters()`：读取打印机列表。
+- `MPrint.health()`：读取本地服务状态。
+- `MPrint.configure({ port })`：连接非默认端口。
+
+HTTPS 业务页面建议把 `resources/sdk/mprint.js` 部署到自己的 HTTPS 静态资源域名，SDK 仍请求本机 `http://127.0.0.1`。Chrome/Edge 可能要求用户允许网站访问本地网络。
+
+## 本地接口
+
+```text
+GET  /editor/
+GET  /mprint.js
+GET  /v1/health
+GET  /v1/printers
+POST /v1/preview
+POST /v1/print
+```
+
+服务只监听 `127.0.0.1`。当前版本面向内部环境，不要求 Token 或 Origin 审批；仍保留 JSON 参数校验、25MB 请求上限、最多 20 张图片、200 个文字项和 5 份打印限制。
+
+## 开发
+
+环境要求：Node.js 22、pnpm 11。
 
 ```bash
-# For windows
-$ npm run build:win
-
-# For macOS
-$ npm run build:mac
-
-# For Linux
-$ npm run build:linux
+pnpm install
+pnpm dev
 ```
+
+非破坏性检查：
+
+```bash
+pnpm typecheck
+pnpm lint
+```
+
+Windows 打包：
+
+```bash
+pnpm build:win
+```
+
+打包产物由 electron-builder 生成。日常开发和代码审查不需要执行打包命令。
+
+## 平台说明
+
+正式目标是 Windows。macOS 可用于开发界面、本地 HTTP 服务和预览流程，但不能替代 Windows 打印驱动、静默打印、开机启动和安装包验证。

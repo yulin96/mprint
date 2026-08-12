@@ -1,10 +1,28 @@
 {
   "name": "mprint",
   "version": "1.0.0",
-  "description": "A minimal Electron application with TypeScript",
+  "private": true,
+  "description": "Windows 本地打印服务，通过 JavaScript SDK 为网页提供打印能力",
   "main": "./out/main/index.js",
-  "author": "example.com",
-  "homepage": "https://electron-vite.org",
+  "author": {
+    "name": "yulin",
+    "url": "https://github.com/yulin96"
+  },
+  "homepage": "https://github.com/yulin96/mprint#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yulin96/mprint.git"
+  },
+  "bugs": {
+    "url": "https://github.com/yulin96/mprint/issues"
+  },
+  "keywords": [
+    "electron",
+    "windows",
+    "printing",
+    "localhost",
+    "javascript-sdk"
+  ],
   "scripts": {
     "format": "prettier --write .",
     "lint": "eslint --cache .",

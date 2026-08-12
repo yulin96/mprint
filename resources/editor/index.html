@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>mprint 模板编辑器</title>
+    <link rel="stylesheet" href="/editor/editor.css" />
+  </head>
+  <body>
+    <div class="ambient ambient-left" aria-hidden="true"></div>
+    <div class="ambient ambient-right" aria-hidden="true"></div>
+    <main class="app-shell">
+      <header class="topbar">
+        <div class="brand">
+          <div class="brand-mark" aria-hidden="true">
+            <svg viewBox="0 0 32 32">
+              <path
+                d="M9 11V5h14v6M9 23H6a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h20a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-3"
+              />
+              <path d="M9 19h14v8H9zM23 15h.01" />
+            </svg>
+          </div>
+          <div>
+            <h1>打印模板编辑器</h1>
+            <p>按毫米配置纸张与打印元素</p>
+          </div>
+        </div>
+        <div class="topbar-actions">
+          <span id="message" class="message" role="status"></span>
+          <button id="copyButton" class="button button-secondary" type="button">
+            复制当前代码
+          </button>
+          <button id="previewButton" class="button button-secondary" type="button">
+            打开打印预览
+          </button>
+          <button id="printButton" class="button button-primary" type="button">测试打印</button>
+        </div>
+      </header>
+
+      <section class="workspace">
+        <aside class="inspector">
+          <section class="panel-section paper-section">
+            <div class="section-heading">
+              <h2>纸张</h2>
+              <span id="paperSummary">86 × 54 mm</span>
+            </div>
+            <div class="form-grid">
+              <label class="field field-wide">
+                <span>常用尺寸</span>
+                <select id="pagePreset">
+                  <option value="card">证卡 86 × 54 mm</option>
+                  <option value="A4">A4 210 × 297 mm</option>
+                  <option value="A5">A5 148 × 210 mm</option>
+                  <option value="A6">A6 105 × 148 mm</option>
+                  <option value="photo-6in">照片 102 × 152 mm</option>
+                  <option value="custom">自定义</option>
+                </select>
+              </label>
+              <label class="field"
+                ><span>宽度 mm</span
+                ><input id="pageWidth" type="number" min="1" max="1200" step="0.1"
+              /></label>
+              <label class="field"
+                ><span>高度 mm</span
+                ><input id="pageHeight" type="number" min="1" max="1200" step="0.1"
+              /></label>
+              <label class="check field-wide"
+                ><input id="landscape" type="checkbox" /><span>横向打印</span></label
+              >
+            </div>
+          </section>
+
+          <section class="panel-section">
+            <div class="section-heading">
+              <h2>元素</h2>
+              <span id="elementCount">2 个</span>
+            </div>
+            <div class="add-actions">
+              <button id="addText" type="button">
+                <svg viewBox="0 0 20 20" aria-hidden="true">
+                  <path d="M4 4h12M10 4v12M7 16h6" />
+                </svg>
+                添加文字
+              </button>
+              <button id="addImage" type="button">
+                <svg viewBox="0 0 20 20" aria-hidden="true">
+                  <rect x="3" y="4" width="14" height="12" rx="1" />
+                  <path d="m5 14 4-4 3 3 2-2 3 3M13.5 8h.01" />
+                </svg>
+                添加图片
+              </button>
+              <input id="imageInput" type="file" accept="image/png,image/jpeg,image/webp" hidden />
+            </div>
+          </section>
+
+          <section id="propertiesSection" class="panel-section properties-section">
+            <div class="section-heading">
+              <h2>元素属性</h2>
+              <button id="deleteElement" class="delete-button" type="button">删除</button>
+            </div>
+            <div id="propertyForm" class="form-grid property-grid"></div>
+          </section>
+
+          <section class="panel-section layers-section">
+            <div class="section-heading">
+              <h2>图层</h2>
+              <span>点击切换</span>
+            </div>
+            <div id="elementList" class="element-list"></div>
+          </section>
+        </aside>
+
+        <section id="stage" class="stage" aria-label="打印纸张预览">
+          <div class="ruler ruler-x" aria-hidden="true"></div>
+          <div class="ruler ruler-y" aria-hidden="true"></div>
+          <div id="paper" class="paper"></div>
+          <div id="paperMeta" class="paper-meta">—</div>
+          <div class="stage-help">点击元素选择 · 拖动调整位置</div>
+        </section>
+      </section>
+    </main>
+    <script src="/mprint.js"></script>
+    <script type="module" src="/editor/editor.js"></script>
+  </body>
+</html>

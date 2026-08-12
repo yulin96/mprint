@@ -1,4 +1,4 @@
-appId: com.electron.app
+appId: ink.yul.mprint
 productName: mprint
 directories:
   buildResources: build
@@ -13,6 +13,8 @@ asarUnpack:
   - resources/**
 win:
   executableName: mprint
+  target:
+    - nsis
 nsis:
   artifactName: ${name}-${version}-setup.${ext}
   shortcutName: ${productName}
