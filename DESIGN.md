@@ -2,147 +2,147 @@
 name: mprint
 description: 面向 Windows 本地打印服务与浏览器模板编辑器的测量型操作工作台
 colors:
-  paper: "#fafafa"
-  paper-bright: "#ffffff"
-  ink: "#24211c"
-  ink-soft: "#625d54"
-  line: "#d9d2c7"
-  line-strong: "#b8afa2"
-  coral: "#ed684f"
-  coral-dark: "#bf4633"
-  coral-soft: "#fff0eb"
-  green: "#267451"
-  green-soft: "#e5f3eb"
-  danger: "#a6382c"
-  editor-surface: "rgba(255, 255, 255, 0.86)"
-  editor-muted: "#6b655c"
-  editor-line: "#dedbd4"
-  editor-line-strong: "#b8b2a8"
-  editor-coral: "#ff6248"
-  editor-coral-soft: "#fff0ec"
-  glow-amber: "#ffd78d"
-  glow-coral: "#ffb6a6"
+  paper: '#fafafa'
+  paper-bright: '#ffffff'
+  ink: '#24211c'
+  ink-soft: '#625d54'
+  line: '#d9d2c7'
+  line-strong: '#b8afa2'
+  coral: '#ed684f'
+  coral-dark: '#bf4633'
+  coral-soft: '#fff0eb'
+  green: '#267451'
+  green-soft: '#e5f3eb'
+  danger: '#a6382c'
+  editor-surface: 'rgba(255, 255, 255, 0.86)'
+  editor-muted: '#6b655c'
+  editor-line: '#dedbd4'
+  editor-line-strong: '#b8b2a8'
+  editor-coral: '#ff6248'
+  editor-coral-soft: '#fff0ec'
+  glow-amber: '#ffd78d'
+  glow-coral: '#ffb6a6'
 typography:
   display:
     fontFamily: "Georgia, 'Times New Roman', serif"
-    fontSize: "clamp(40px, 5vw, 64px)"
+    fontSize: 'clamp(40px, 5vw, 64px)'
     fontWeight: 400
     lineHeight: 1
-    letterSpacing: "-0.03em"
+    letterSpacing: '-0.03em'
   brand:
     fontFamily: "Georgia, 'Times New Roman', serif"
-    fontSize: "28px"
+    fontSize: '28px'
     fontWeight: 700
     lineHeight: 1
-    letterSpacing: "-0.02em"
+    letterSpacing: '-0.02em'
   page-title:
     fontFamily: "'Microsoft YaHei UI', 'PingFang SC', 'Segoe UI', sans-serif"
-    fontSize: "20px"
+    fontSize: '20px'
     fontWeight: 700
     lineHeight: 1.5
-    letterSpacing: "normal"
+    letterSpacing: 'normal'
   headline:
     fontFamily: "'Microsoft YaHei UI', 'PingFang SC', 'Segoe UI', sans-serif"
-    fontSize: "18px"
+    fontSize: '18px'
     fontWeight: 700
     lineHeight: 1.5
-    letterSpacing: "normal"
+    letterSpacing: 'normal'
   title:
     fontFamily: "'Microsoft YaHei UI', 'PingFang SC', 'Segoe UI', sans-serif"
-    fontSize: "14px"
+    fontSize: '14px'
     fontWeight: 700
     lineHeight: 1.5
-    letterSpacing: "normal"
+    letterSpacing: 'normal'
   body:
     fontFamily: "'Microsoft YaHei UI', 'PingFang SC', 'Segoe UI', sans-serif"
-    fontSize: "13px"
+    fontSize: '13px'
     fontWeight: 400
     lineHeight: 1.5
-    letterSpacing: "normal"
+    letterSpacing: 'normal'
   label:
     fontFamily: "'Microsoft YaHei UI', 'PingFang SC', 'Segoe UI', sans-serif"
-    fontSize: "11px"
+    fontSize: '11px'
     fontWeight: 700
     lineHeight: 1.5
-    letterSpacing: "normal"
+    letterSpacing: 'normal'
   code:
     fontFamily: "'Cascadia Code', 'SFMono-Regular', Consolas, monospace"
-    fontSize: "12px"
+    fontSize: '12px'
     fontWeight: 400
     lineHeight: 1.7
-    letterSpacing: "normal"
+    letterSpacing: 'normal'
 rounded:
-  field: "8px"
-  action: "10px"
-  launch: "11px"
-  brand: "12px"
-  panel: "14px"
-  workspace: "16px"
-  pill: "999px"
+  field: '8px'
+  action: '10px'
+  launch: '11px'
+  brand: '12px'
+  panel: '14px'
+  workspace: '16px'
+  pill: '999px'
 spacing:
-  xs: "6px"
-  sm: "8px"
-  md: "10px"
-  lg: "14px"
-  xl: "16px"
-  2xl: "20px"
-  3xl: "24px"
-  4xl: "28px"
-  5xl: "32px"
-  6xl: "34px"
-  7xl: "40px"
+  xs: '6px'
+  sm: '8px'
+  md: '10px'
+  lg: '14px'
+  xl: '16px'
+  2xl: '20px'
+  3xl: '24px'
+  4xl: '28px'
+  5xl: '32px'
+  6xl: '34px'
+  7xl: '40px'
 components:
   button-primary:
-    backgroundColor: "{colors.ink}"
-    textColor: "#ffffff"
-    typography: "{typography.body}"
-    rounded: "{rounded.action}"
-    padding: "0 15px"
-    height: "38px"
+    backgroundColor: '{colors.ink}'
+    textColor: '#ffffff'
+    typography: '{typography.body}'
+    rounded: '{rounded.action}'
+    padding: '0 15px'
+    height: '38px'
   button-secondary:
-    backgroundColor: "rgba(255, 255, 255, 0.75)"
-    textColor: "{colors.ink}"
-    typography: "{typography.body}"
-    rounded: "{rounded.action}"
-    padding: "0 15px"
-    height: "38px"
+    backgroundColor: 'rgba(255, 255, 255, 0.75)'
+    textColor: '{colors.ink}'
+    typography: '{typography.body}'
+    rounded: '{rounded.action}'
+    padding: '0 15px'
+    height: '38px'
   editor-launch:
-    backgroundColor: "{colors.ink}"
-    textColor: "#ffffff"
-    typography: "{typography.body}"
-    rounded: "{rounded.launch}"
-    padding: "14px 16px"
+    backgroundColor: '{colors.ink}'
+    textColor: '#ffffff'
+    typography: '{typography.body}'
+    rounded: '{rounded.launch}'
+    padding: '14px 16px'
   status-running:
-    backgroundColor: "{colors.green-soft}"
-    textColor: "{colors.green}"
-    typography: "{typography.body}"
-    rounded: "{rounded.pill}"
-    padding: "8px 13px"
+    backgroundColor: '{colors.green-soft}'
+    textColor: '{colors.green}'
+    typography: '{typography.body}'
+    rounded: '{rounded.pill}'
+    padding: '8px 13px'
   input-editor:
-    backgroundColor: "{colors.paper-bright}"
-    textColor: "{colors.ink}"
-    typography: "{typography.body}"
-    rounded: "{rounded.field}"
-    padding: "0 9px"
-    height: "35px"
+    backgroundColor: '{colors.paper-bright}'
+    textColor: '{colors.ink}'
+    typography: '{typography.body}'
+    rounded: '{rounded.field}'
+    padding: '0 9px'
+    height: '35px'
   editor-workspace:
-    backgroundColor: "rgba(255, 255, 255, 0.72)"
-    textColor: "{colors.ink}"
-    rounded: "{rounded.workspace}"
-    height: "calc(100vh - 128px)"
+    backgroundColor: 'rgba(255, 255, 255, 0.72)'
+    textColor: '{colors.ink}'
+    rounded: '{rounded.workspace}'
+    height: 'calc(100vh - 124px)'
   layer-selected:
-    backgroundColor: "{colors.editor-coral-soft}"
-    textColor: "{colors.ink}"
-    typography: "{typography.body}"
-    rounded: "{rounded.field}"
-    padding: "7px 10px"
-    height: "39px"
+    backgroundColor: '{colors.editor-coral-soft}'
+    textColor: '{colors.ink}'
+    typography: '{typography.body}'
+    rounded: '{rounded.field}'
+    padding: '7px 10px'
+    height: '39px'
   paper-preview:
-    backgroundColor: "{colors.paper-bright}"
-    textColor: "{colors.ink}"
-    rounded: "0px"
-    width: "600px"
-    height: "380px"
+    backgroundColor: '{colors.paper-bright}'
+    textColor: '{colors.ink}'
+    rounded: '0px'
+    width: '600px'
+    height: '380px'
 ---
 
 # Design System: mprint
@@ -161,7 +161,7 @@ mprint 用一套连续的视觉系统连接两个职责明确的表面：Electro
 - `#fafafa` 全局底色上叠加 32px 细网格。
 - 左上暖黄、右下珊瑚的低透明模糊环境光晕。
 - 白色半透明工作表面、珊瑚细边界和深墨文字。
-- 编辑器左侧配置与属性，右侧 20px 测量网格、标尺和白纸。
+- 编辑器标题右侧紧邻纸张入口和一级“打印机默认纸张”开关；纸张弹层只承载尺寸与方向。左侧只保留元素、图层和元素属性，右侧为定位工具、20px 测量网格、标尺和白纸。
 - Windows 系统中文字体为主，参数、地址和尺寸使用等宽字体。
 - 状态有文字与结构反馈，无装饰性动效。
 
@@ -202,6 +202,8 @@ mprint 用一套连续的视觉系统连接两个职责明确的表面：Electro
 
 **The White Sheet Rule.** 实体白是输入和打印介质的清晰基准；纸张必须保持不透明纯白，不受环境光晕染色。
 
+**The Default Printer Paper Rule.** `useDefaultPageSize` 是纸张入口旁的一级开关，不藏入弹层。启用时必须明确说明打印机接管实际纸张尺寸，而模板宽高仍负责编辑坐标与预览，避免把“打印纸张”和“模板画布”混为一谈。
+
 ## Typography
 
 **Display Font:** Georgia（回退到 Times New Roman 与系统衬线字体）  
@@ -229,13 +231,17 @@ mprint 用一套连续的视觉系统连接两个职责明确的表面：Electro
 
 Electron 配置面板最小宽度为 920px，外壳最大宽度 1400px，默认内边距为顶部 20px、左右与底部 40px。服务总览使用约 1.6:0.8 的两列：左侧显示服务状态、端点和“打开模板编辑器”入口，右侧保留启动设置；打印机与 SDK 示例在其下按区块纵向展开。窗口收紧到 1050px 以下时，左右内边距降为 28px，服务列比调整为 1.2:0.8。
 
-浏览器编辑器最小宽度为 1080px，外壳最大宽度 1680px，默认内边距为顶部 24px、左右与底部 34px。工作区高度为视口减 128px且不低于 660px；左侧检查器宽度在 390–430px 之间，右侧画布至少 620px。检查器独立纵向滚动，纸张、元素、属性和图层按连续分区排列；属性表单通常两列，元素几何属性可使用四列。
+浏览器编辑器最小宽度为 1080px，外壳最大宽度 1680px，默认内边距为顶部 24px、左右与底部 34px。工作区高度为视口减 124px且不低于 560px；常规高度下页面外层不滚动，只有视口高度低于 680px 时才允许页面外层滚动。左侧检查器宽度在 390–430px 之间，右侧画布至少 620px。检查器独立纵向滚动，只按元素、图层、元素属性排列；位置与尺寸折叠在属性高级项中。纸张设置位于顶部弹层，选中元素的快速定位位于画布上下文工具栏。
 
 在 1250px 以下，编辑器左栏固定为 390px，右栏继续占满剩余空间，顶部状态消息可隐藏以保护主操作空间。全局页面网格间距为 32px；画布内部测量网格为 20px，顶部标尺高 27px、左侧标尺宽 36px，两套网格不能混用。
 
 **The Two-Surface Responsibility Rule.** Electron 只承载服务配置和编辑器入口；模板编辑必须在系统浏览器的大画布中完成，不能重新塞回桌面窗口。
 
 **The Control-and-Result Rule.** 浏览器编辑器的配置、属性和图层留在左侧，纸张结果持续留在右侧；不要让检查器覆盖或替换纸张预览。
+
+**The Two Centers Rule.** “快速定位”的水平居中、垂直居中和页面中心控制选中元素框相对纸张的位置；文本属性 `verticalAlign` 的顶部、居中和底部控制文字内容在自身文本框内的垂直对齐。两种“居中”必须分别表达，不能混成一个不明确的操作。
+
+**The Open Topbar Rule.** Electron 顶栏依靠留白和下方内容分组建立层级，不增加多余的底边线。
 
 ## Elevation & Depth
 
@@ -292,11 +298,11 @@ Electron 配置面板最小宽度为 920px，外壳最大宽度 1400px，默认�
 
 ### Navigation
 
-Electron 不使用内部页签切换编辑器。“打开模板编辑器”通过本地 HTTP 地址进入系统默认浏览器；浏览器编辑器的顶部栏只包含上下文标题、状态消息、复制、预览和测试打印操作，不提供多级导航。
+Electron 不使用内部页签切换编辑器。“打开模板编辑器”通过本地 HTTP 地址进入系统默认浏览器；Electron 顶栏不使用底边线。浏览器编辑器的顶部栏包含上下文标题、纸张设置弹层、状态消息、复制、预览和测试打印操作，不提供多级导航。
 
 ### Browser Editor Workspace
 
-浏览器编辑器的标志性容器采用 16px 圆角、半透明白底、1px 鲜珊瑚边框和轻环境阴影。左侧检查器以分隔线连续组织纸张、元素、属性与图层，右侧画布保持最大剩余宽度；这是一个完整工作区，不拆成卡片墙。
+浏览器编辑器的标志性容器采用 16px 圆角、半透明白底、1px 鲜珊瑚边框和轻环境阴影。左侧检查器以分隔线连续组织元素、图层与元素属性，右侧画布保持最大剩余宽度；纸张设置从顶部按钮展开，定位工具只在选中元素时显示于画布上方。这是一个完整工作区，不拆成卡片墙。
 
 ### Measured Paper Stage
 
@@ -313,6 +319,8 @@ Electron 不使用内部页签切换编辑器。“打开模板编辑器”通�
 - **Do** 让 Electron 首屏直接显示服务状态、端点、打印机和浏览器编辑器入口。
 - **Do** 在两个表面维持相同的 32px 全局网格、对角环境光和深墨信息骨架。
 - **Do** 保持浏览器编辑器“左侧控制、右侧结果”的稳定结构，并让检查器独立滚动。
+- **Do** 让左栏只承担元素、图层和当前属性，把纸张配置放在顶部，把选中元素定位放在画布上下文中。
+- **Do** 明确区分元素框相对纸张居中与文字内容在自身文本框内垂直居中。
 - **Do** 区分全局 32px 背景网格与画布 20px 测量网格及标尺。
 - **Do** 对成功、错误、等待和选中状态同时提供文字、色彩与边界提示。
 - **Do** 把地址、代码、毫米尺寸和图层编号交给等宽字体。
@@ -323,5 +331,6 @@ Electron 不使用内部页签切换编辑器。“打开模板编辑器”通�
 - **Don't** 把暖黄与浅珊瑚光晕用于控件、文字、徽标或纸张内容。
 - **Don't** 用大面积实色珊瑚、强渐变或装饰插画稀释校准重点。
 - **Don't** 给普通卡片、列表项和输入框增加阴影或漂浮动效。
+- **Don't** 给 Electron 顶栏增加没有信息分组作用的底边线。
 - **Don't** 把纸张做成圆角卡片，或让检查器覆盖打印结果。
 - **Don't** 只用红绿颜色表达运行或错误状态，必须保留可读文字。

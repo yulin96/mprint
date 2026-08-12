@@ -10,6 +10,7 @@
   --coral-dark: #bf4633;
   --coral-soft: #fff0ec;
   --green: #267451;
+  --green-soft: #e5f3eb;
   --danger: #a6382c;
   font-family: 'Microsoft YaHei UI', 'PingFang SC', 'Segoe UI', sans-serif;
 }
@@ -20,11 +21,12 @@
 html,
 body {
   margin: 0;
-  min-height: 100%;
+  height: 100%;
 }
 body {
   min-width: 1080px;
   min-height: 100vh;
+  overflow: hidden;
   color: var(--ink);
   background-color: var(--background);
   background-image:
@@ -74,7 +76,7 @@ textarea:focus-visible {
 
 .app-shell {
   width: min(1680px, 100%);
-  min-height: 100vh;
+  height: 100vh;
   margin: 0 auto;
   padding: 24px 34px 34px;
 }
@@ -91,6 +93,7 @@ textarea:focus-visible {
   display: flex;
   align-items: center;
   gap: 13px;
+  flex: 0 0 auto;
 }
 .brand-mark {
   display: grid;
@@ -127,6 +130,111 @@ h1 {
   align-items: center;
   justify-content: flex-end;
   gap: 10px;
+  flex: 0 0 auto;
+}
+.topbar-context {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.paper-control {
+  position: relative;
+}
+.paper-settings-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+.paper-settings-button svg,
+.popover-close svg {
+  width: 16px;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.5;
+}
+.paper-settings-button strong {
+  font-family: Consolas, monospace;
+  font-size: 11px;
+}
+.default-paper-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 38px;
+  padding: 0 12px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.default-paper-toggle:hover {
+  border-color: var(--line-strong);
+  color: var(--ink);
+  background: rgba(255, 255, 255, 0.58);
+}
+.default-paper-toggle:has(input:focus-visible) {
+  outline: 3px solid rgba(255, 98, 72, 0.24);
+  outline-offset: 2px;
+}
+.default-paper-toggle input {
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  accent-color: var(--coral);
+}
+.default-paper-toggle:has(input:checked) {
+  border-color: rgba(38, 116, 81, 0.3);
+  background: var(--green-soft);
+  color: var(--green);
+}
+.paper-popover {
+  position: absolute;
+  z-index: 30;
+  top: calc(100% + 10px);
+  left: 0;
+  width: 360px;
+  padding: 18px;
+  border-radius: 14px;
+  background: #fff;
+  box-shadow: 0 18px 50px rgba(67, 58, 46, 0.2);
+}
+.paper-popover[hidden] {
+  display: none;
+}
+.popover-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+.popover-heading h2 {
+  font-size: 15px;
+}
+.popover-heading p {
+  margin-top: 3px;
+  color: var(--muted);
+  font-size: 11px;
+}
+.popover-close {
+  display: grid;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  cursor: pointer;
+  place-items: center;
+}
+.popover-close:hover {
+  background: #f1efeb;
 }
 .message {
   min-width: 150px;
@@ -167,8 +275,8 @@ h1 {
 .workspace {
   display: grid;
   grid-template-columns: minmax(390px, 430px) minmax(620px, 1fr);
-  height: calc(100vh - 128px);
-  min-height: 660px;
+  height: calc(100vh - 124px);
+  min-height: 560px;
   overflow: hidden;
   border: 1px solid var(--coral);
   border-radius: 16px;
@@ -295,6 +403,8 @@ h1 {
 .element-list {
   display: grid;
   gap: 6px;
+  max-height: 190px;
+  overflow-y: auto;
 }
 .element-item {
   display: flex;
@@ -336,6 +446,46 @@ h1 {
   font-family: Consolas, monospace;
   font-size: 10px;
 }
+.advanced-properties {
+  grid-column: 1 / -1;
+  margin-top: 2px;
+  padding-top: 10px;
+  border-top: 1px solid var(--line);
+}
+.advanced-properties summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 700;
+  list-style: none;
+}
+.advanced-properties summary::-webkit-details-marker {
+  display: none;
+}
+.advanced-properties summary span {
+  color: var(--muted);
+  font-family: Consolas, monospace;
+  font-size: 10px;
+  font-weight: 400;
+}
+.advanced-properties summary::after {
+  width: 6px;
+  height: 6px;
+  border-right: 1.5px solid var(--muted);
+  border-bottom: 1.5px solid var(--muted);
+  content: '';
+  transform: rotate(45deg);
+}
+.advanced-properties[open] summary::after {
+  transform: rotate(225deg);
+}
+.geometry-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  margin-top: 10px;
+}
 
 .stage {
   position: relative;
@@ -349,6 +499,64 @@ h1 {
     linear-gradient(rgba(97, 89, 77, 0.08) 1px, transparent 1px),
     linear-gradient(90deg, rgba(97, 89, 77, 0.08) 1px, transparent 1px);
   background-size: 20px 20px;
+}
+.canvas-toolbar {
+  position: absolute;
+  z-index: 10;
+  top: 39px;
+  left: 50%;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 38px;
+  padding: 4px 6px 4px 10px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: 0 9px 26px rgba(67, 58, 46, 0.16);
+  transform: translateX(-50%);
+}
+.canvas-toolbar[hidden] {
+  display: none;
+}
+.canvas-toolbar > span {
+  margin-right: 3px;
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.toolbar-group {
+  display: flex;
+  gap: 2px;
+}
+.canvas-toolbar button {
+  display: grid;
+  width: 29px;
+  height: 29px;
+  padding: 0;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  cursor: pointer;
+  place-items: center;
+}
+.canvas-toolbar button:hover {
+  background: var(--coral-soft);
+  color: var(--coral-dark);
+}
+.canvas-toolbar svg {
+  width: 17px;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.35;
+}
+.toolbar-divider {
+  width: 1px;
+  height: 20px;
+  margin: 0 2px;
+  background: var(--line);
 }
 .ruler {
   position: absolute;
@@ -413,5 +621,31 @@ h1 {
   }
   .message {
     display: none;
+  }
+  .paper-settings-button span {
+    display: none;
+  }
+  .default-paper-toggle {
+    padding-inline: 8px;
+  }
+  .default-paper-toggle span {
+    font-size: 0;
+  }
+  .default-paper-toggle span::after {
+    content: '默认纸张';
+    font-size: 11px;
+  }
+}
+
+@media (max-height: 680px) {
+  body {
+    overflow-y: auto;
+  }
+  .app-shell {
+    height: auto;
+    min-height: 680px;
+  }
+  .workspace {
+    height: 556px;
   }
 }

@@ -10,7 +10,7 @@ mprint 是一个面向 Windows 的本地打印服务。程序常驻系统托盘�
 - 获取 Windows 打印机列表
 - 支持 A3/A4/A5/A6、照片纸和自定义毫米纸张
 - 支持毫米定位的文字、Data URL 图片、对齐、旋转和打印份数
-- 浏览器模板编辑器：配置纸张和元素、实时预览、拖动定位、复制调用代码
+- 浏览器模板编辑器：配置纸张和元素、实时预览、拖动定位、图层切换、快速居中、复制调用代码
 - Windows 登录后自动启动、关闭到托盘和可配置服务端口
 
 ## 使用模板编辑器
@@ -21,7 +21,7 @@ mprint 是一个面向 Windows 的本地打印服务。程序常驻系统托盘�
 http://127.0.0.1:17653/editor/
 ```
 
-编辑器左侧配置纸张、文字和图片，右侧实时显示打印结果。完成后点击“复制当前代码”，即可把生成的 `MPrint.print(...)` 调用粘贴到业务项目中。
+编辑器顶部配置纸张，并提供一级“打印机默认纸张”开关；左侧管理元素、图层和属性，右侧实时显示打印结果。完成后点击“复制当前代码”，即可把生成的 `MPrint.print(...)` 调用粘贴到业务项目中。
 
 ## 网页调用
 
@@ -39,16 +39,20 @@ http://127.0.0.1:17653/editor/
         yMm: 20,
         widthMm: 80,
         heightMm: 12,
-        align: 'center'
+        align: 'center',
+        verticalAlign: 'middle'
       }
     ],
     printer: {
       silent: true,
-      copies: 1
+      copies: 1,
+      useDefaultPageSize: false
     }
   })
 </script>
 ```
+
+`printer.useDefaultPageSize` 为 `true` 时，不向 Windows 打印机指定纸张尺寸，由打印机当前默认配置决定；`page` 仍用于模板坐标、编辑和预览。
 
 SDK API：
 

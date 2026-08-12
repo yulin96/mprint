@@ -40,6 +40,7 @@ export type PrintTextItem = {
   fontWeight?: number | 'normal' | 'bold'
   color?: string
   align?: 'left' | 'center' | 'right'
+  verticalAlign?: 'top' | 'middle' | 'bottom'
   lineHeight?: number
   rotate?: 0 | 90 | 180 | 270
 }

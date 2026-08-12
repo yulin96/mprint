@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-08-12T15:15:13Z",
+  "generatedAt": "2026-08-12T15:30:14Z",
   "title": "Design System: mprint",
   "extensions": {
     "colorMeta": {
@@ -8,127 +8,313 @@
         "role": "neutral",
         "displayName": "全局近白",
         "canonical": "#fafafa",
-        "tonalRamp": ["oklch(15% 0 0)", "oklch(25% 0 0)", "oklch(38% 0 0)", "oklch(52% 0 0)", "oklch(65% 0 0)", "oklch(76% 0 0)", "oklch(87% 0 0)", "oklch(95% 0 0)"]
+        "tonalRamp": [
+          "oklch(15% 0 0)",
+          "oklch(25% 0 0)",
+          "oklch(38% 0 0)",
+          "oklch(52% 0 0)",
+          "oklch(65% 0 0)",
+          "oklch(76% 0 0)",
+          "oklch(87% 0 0)",
+          "oklch(95% 0 0)"
+        ]
       },
       "paper-bright": {
         "role": "neutral",
         "displayName": "实体白",
         "canonical": "#ffffff",
-        "tonalRamp": ["oklch(15% 0 0)", "oklch(25% 0 0)", "oklch(38% 0 0)", "oklch(52% 0 0)", "oklch(65% 0 0)", "oklch(76% 0 0)", "oklch(87% 0 0)", "oklch(95% 0 0)"]
+        "tonalRamp": [
+          "oklch(15% 0 0)",
+          "oklch(25% 0 0)",
+          "oklch(38% 0 0)",
+          "oklch(52% 0 0)",
+          "oklch(65% 0 0)",
+          "oklch(76% 0 0)",
+          "oklch(87% 0 0)",
+          "oklch(95% 0 0)"
+        ]
       },
       "ink": {
         "role": "neutral",
         "displayName": "油墨黑",
         "canonical": "#24211c",
-        "tonalRamp": ["oklch(15% 0.010 80.6)", "oklch(25% 0.010 80.6)", "oklch(38% 0.010 80.6)", "oklch(52% 0.010 80.6)", "oklch(65% 0.010 80.6)", "oklch(76% 0.010 80.6)", "oklch(87% 0.010 80.6)", "oklch(95% 0.010 80.6)"]
+        "tonalRamp": [
+          "oklch(15% 0.010 80.6)",
+          "oklch(25% 0.010 80.6)",
+          "oklch(38% 0.010 80.6)",
+          "oklch(52% 0.010 80.6)",
+          "oklch(65% 0.010 80.6)",
+          "oklch(76% 0.010 80.6)",
+          "oklch(87% 0.010 80.6)",
+          "oklch(95% 0.010 80.6)"
+        ]
       },
       "ink-soft": {
         "role": "neutral",
         "displayName": "桌面柔墨",
         "canonical": "#625d54",
-        "tonalRamp": ["oklch(15% 0.015 82.4)", "oklch(25% 0.015 82.4)", "oklch(38% 0.015 82.4)", "oklch(52% 0.015 82.4)", "oklch(65% 0.015 82.4)", "oklch(76% 0.015 82.4)", "oklch(87% 0.015 82.4)", "oklch(95% 0.015 82.4)"]
+        "tonalRamp": [
+          "oklch(15% 0.015 82.4)",
+          "oklch(25% 0.015 82.4)",
+          "oklch(38% 0.015 82.4)",
+          "oklch(52% 0.015 82.4)",
+          "oklch(65% 0.015 82.4)",
+          "oklch(76% 0.015 82.4)",
+          "oklch(87% 0.015 82.4)",
+          "oklch(95% 0.015 82.4)"
+        ]
       },
       "line": {
         "role": "neutral",
         "displayName": "桌面浅铅线",
         "canonical": "#d9d2c7",
-        "tonalRamp": ["oklch(15% 0.017 79.3)", "oklch(25% 0.017 79.3)", "oklch(38% 0.017 79.3)", "oklch(52% 0.017 79.3)", "oklch(65% 0.017 79.3)", "oklch(76% 0.017 79.3)", "oklch(87% 0.017 79.3)", "oklch(95% 0.017 79.3)"]
+        "tonalRamp": [
+          "oklch(15% 0.017 79.3)",
+          "oklch(25% 0.017 79.3)",
+          "oklch(38% 0.017 79.3)",
+          "oklch(52% 0.017 79.3)",
+          "oklch(65% 0.017 79.3)",
+          "oklch(76% 0.017 79.3)",
+          "oklch(87% 0.017 79.3)",
+          "oklch(95% 0.017 79.3)"
+        ]
       },
       "line-strong": {
         "role": "neutral",
         "displayName": "桌面深铅线",
         "canonical": "#b8afa2",
-        "tonalRamp": ["oklch(15% 0.021 77.3)", "oklch(25% 0.021 77.3)", "oklch(38% 0.021 77.3)", "oklch(52% 0.021 77.3)", "oklch(65% 0.021 77.3)", "oklch(76% 0.021 77.3)", "oklch(87% 0.021 77.3)", "oklch(95% 0.021 77.3)"]
+        "tonalRamp": [
+          "oklch(15% 0.021 77.3)",
+          "oklch(25% 0.021 77.3)",
+          "oklch(38% 0.021 77.3)",
+          "oklch(52% 0.021 77.3)",
+          "oklch(65% 0.021 77.3)",
+          "oklch(76% 0.021 77.3)",
+          "oklch(87% 0.021 77.3)",
+          "oklch(95% 0.021 77.3)"
+        ]
       },
       "coral": {
         "role": "primary",
         "displayName": "桌面校准珊瑚",
         "canonical": "#ed684f",
-        "tonalRamp": ["oklch(15% 0.170 32.4)", "oklch(25% 0.170 32.4)", "oklch(38% 0.170 32.4)", "oklch(52% 0.170 32.4)", "oklch(65% 0.170 32.4)", "oklch(76% 0.170 32.4)", "oklch(87% 0.170 32.4)", "oklch(95% 0.170 32.4)"]
+        "tonalRamp": [
+          "oklch(15% 0.170 32.4)",
+          "oklch(25% 0.170 32.4)",
+          "oklch(38% 0.170 32.4)",
+          "oklch(52% 0.170 32.4)",
+          "oklch(65% 0.170 32.4)",
+          "oklch(76% 0.170 32.4)",
+          "oklch(87% 0.170 32.4)",
+          "oklch(95% 0.170 32.4)"
+        ]
       },
       "coral-dark": {
         "role": "primary",
         "displayName": "深珊瑚",
         "canonical": "#bf4633",
-        "tonalRamp": ["oklch(15% 0.159 31.4)", "oklch(25% 0.159 31.4)", "oklch(38% 0.159 31.4)", "oklch(52% 0.159 31.4)", "oklch(65% 0.159 31.4)", "oklch(76% 0.159 31.4)", "oklch(87% 0.159 31.4)", "oklch(95% 0.159 31.4)"]
+        "tonalRamp": [
+          "oklch(15% 0.159 31.4)",
+          "oklch(25% 0.159 31.4)",
+          "oklch(38% 0.159 31.4)",
+          "oklch(52% 0.159 31.4)",
+          "oklch(65% 0.159 31.4)",
+          "oklch(76% 0.159 31.4)",
+          "oklch(87% 0.159 31.4)",
+          "oklch(95% 0.159 31.4)"
+        ]
       },
       "coral-soft": {
         "role": "primary",
         "displayName": "桌面珊瑚薄层",
         "canonical": "#fff0eb",
-        "tonalRamp": ["oklch(15% 0.018 39.4)", "oklch(25% 0.018 39.4)", "oklch(38% 0.018 39.4)", "oklch(52% 0.018 39.4)", "oklch(65% 0.018 39.4)", "oklch(76% 0.018 39.4)", "oklch(87% 0.018 39.4)", "oklch(95% 0.018 39.4)"]
+        "tonalRamp": [
+          "oklch(15% 0.018 39.4)",
+          "oklch(25% 0.018 39.4)",
+          "oklch(38% 0.018 39.4)",
+          "oklch(52% 0.018 39.4)",
+          "oklch(65% 0.018 39.4)",
+          "oklch(76% 0.018 39.4)",
+          "oklch(87% 0.018 39.4)",
+          "oklch(95% 0.018 39.4)"
+        ]
       },
       "green": {
         "role": "secondary",
         "displayName": "运行绿",
         "canonical": "#267451",
-        "tonalRamp": ["oklch(15% 0.095 160.3)", "oklch(25% 0.095 160.3)", "oklch(38% 0.095 160.3)", "oklch(52% 0.095 160.3)", "oklch(65% 0.095 160.3)", "oklch(76% 0.095 160.3)", "oklch(87% 0.095 160.3)", "oklch(95% 0.095 160.3)"]
+        "tonalRamp": [
+          "oklch(15% 0.095 160.3)",
+          "oklch(25% 0.095 160.3)",
+          "oklch(38% 0.095 160.3)",
+          "oklch(52% 0.095 160.3)",
+          "oklch(65% 0.095 160.3)",
+          "oklch(76% 0.095 160.3)",
+          "oklch(87% 0.095 160.3)",
+          "oklch(95% 0.095 160.3)"
+        ]
       },
       "green-soft": {
         "role": "secondary",
         "displayName": "运行绿薄层",
         "canonical": "#e5f3eb",
-        "tonalRamp": ["oklch(15% 0.018 161.1)", "oklch(25% 0.018 161.1)", "oklch(38% 0.018 161.1)", "oklch(52% 0.018 161.1)", "oklch(65% 0.018 161.1)", "oklch(76% 0.018 161.1)", "oklch(87% 0.018 161.1)", "oklch(95% 0.018 161.1)"]
+        "tonalRamp": [
+          "oklch(15% 0.018 161.1)",
+          "oklch(25% 0.018 161.1)",
+          "oklch(38% 0.018 161.1)",
+          "oklch(52% 0.018 161.1)",
+          "oklch(65% 0.018 161.1)",
+          "oklch(76% 0.018 161.1)",
+          "oklch(87% 0.018 161.1)",
+          "oklch(95% 0.018 161.1)"
+        ]
       },
       "danger": {
         "role": "tertiary",
         "displayName": "故障红",
         "canonical": "#a6382c",
-        "tonalRamp": ["oklch(15% 0.147 29.5)", "oklch(25% 0.147 29.5)", "oklch(38% 0.147 29.5)", "oklch(52% 0.147 29.5)", "oklch(65% 0.147 29.5)", "oklch(76% 0.147 29.5)", "oklch(87% 0.147 29.5)", "oklch(95% 0.147 29.5)"]
+        "tonalRamp": [
+          "oklch(15% 0.147 29.5)",
+          "oklch(25% 0.147 29.5)",
+          "oklch(38% 0.147 29.5)",
+          "oklch(52% 0.147 29.5)",
+          "oklch(65% 0.147 29.5)",
+          "oklch(76% 0.147 29.5)",
+          "oklch(87% 0.147 29.5)",
+          "oklch(95% 0.147 29.5)"
+        ]
       },
       "editor-surface": {
         "role": "neutral",
         "displayName": "半透明白面",
         "canonical": "rgba(255, 255, 255, 0.86)",
-        "tonalRamp": ["oklch(15% 0 0 / 0.86)", "oklch(25% 0 0 / 0.86)", "oklch(38% 0 0 / 0.86)", "oklch(52% 0 0 / 0.86)", "oklch(65% 0 0 / 0.86)", "oklch(76% 0 0 / 0.86)", "oklch(87% 0 0 / 0.86)", "oklch(95% 0 0 / 0.86)"]
+        "tonalRamp": [
+          "oklch(15% 0 0 / 0.86)",
+          "oklch(25% 0 0 / 0.86)",
+          "oklch(38% 0 0 / 0.86)",
+          "oklch(52% 0 0 / 0.86)",
+          "oklch(65% 0 0 / 0.86)",
+          "oklch(76% 0 0 / 0.86)",
+          "oklch(87% 0 0 / 0.86)",
+          "oklch(95% 0 0 / 0.86)"
+        ]
       },
       "editor-muted": {
         "role": "neutral",
         "displayName": "编辑器柔墨",
         "canonical": "#6b655c",
-        "tonalRamp": ["oklch(15% 0.016 78.2)", "oklch(25% 0.016 78.2)", "oklch(38% 0.016 78.2)", "oklch(52% 0.016 78.2)", "oklch(65% 0.016 78.2)", "oklch(76% 0.016 78.2)", "oklch(87% 0.016 78.2)", "oklch(95% 0.016 78.2)"]
+        "tonalRamp": [
+          "oklch(15% 0.016 78.2)",
+          "oklch(25% 0.016 78.2)",
+          "oklch(38% 0.016 78.2)",
+          "oklch(52% 0.016 78.2)",
+          "oklch(65% 0.016 78.2)",
+          "oklch(76% 0.016 78.2)",
+          "oklch(87% 0.016 78.2)",
+          "oklch(95% 0.016 78.2)"
+        ]
       },
       "editor-line": {
         "role": "neutral",
         "displayName": "编辑器浅铅线",
         "canonical": "#dedbd4",
-        "tonalRamp": ["oklch(15% 0.010 87.5)", "oklch(25% 0.010 87.5)", "oklch(38% 0.010 87.5)", "oklch(52% 0.010 87.5)", "oklch(65% 0.010 87.5)", "oklch(76% 0.010 87.5)", "oklch(87% 0.010 87.5)", "oklch(95% 0.010 87.5)"]
+        "tonalRamp": [
+          "oklch(15% 0.010 87.5)",
+          "oklch(25% 0.010 87.5)",
+          "oklch(38% 0.010 87.5)",
+          "oklch(52% 0.010 87.5)",
+          "oklch(65% 0.010 87.5)",
+          "oklch(76% 0.010 87.5)",
+          "oklch(87% 0.010 87.5)",
+          "oklch(95% 0.010 87.5)"
+        ]
       },
       "editor-line-strong": {
         "role": "neutral",
         "displayName": "编辑器深铅线",
         "canonical": "#b8b2a8",
-        "tonalRamp": ["oklch(15% 0.016 80.7)", "oklch(25% 0.016 80.7)", "oklch(38% 0.016 80.7)", "oklch(52% 0.016 80.7)", "oklch(65% 0.016 80.7)", "oklch(76% 0.016 80.7)", "oklch(87% 0.016 80.7)", "oklch(95% 0.016 80.7)"]
+        "tonalRamp": [
+          "oklch(15% 0.016 80.7)",
+          "oklch(25% 0.016 80.7)",
+          "oklch(38% 0.016 80.7)",
+          "oklch(52% 0.016 80.7)",
+          "oklch(65% 0.016 80.7)",
+          "oklch(76% 0.016 80.7)",
+          "oklch(87% 0.016 80.7)",
+          "oklch(95% 0.016 80.7)"
+        ]
       },
       "editor-coral": {
         "role": "primary",
         "displayName": "编辑器校准珊瑚",
         "canonical": "#ff6248",
-        "tonalRamp": ["oklch(15% 0.196 31.7)", "oklch(25% 0.196 31.7)", "oklch(38% 0.196 31.7)", "oklch(52% 0.196 31.7)", "oklch(65% 0.196 31.7)", "oklch(76% 0.196 31.7)", "oklch(87% 0.196 31.7)", "oklch(95% 0.196 31.7)"]
+        "tonalRamp": [
+          "oklch(15% 0.196 31.7)",
+          "oklch(25% 0.196 31.7)",
+          "oklch(38% 0.196 31.7)",
+          "oklch(52% 0.196 31.7)",
+          "oklch(65% 0.196 31.7)",
+          "oklch(76% 0.196 31.7)",
+          "oklch(87% 0.196 31.7)",
+          "oklch(95% 0.196 31.7)"
+        ]
       },
       "editor-coral-soft": {
         "role": "primary",
         "displayName": "编辑器珊瑚薄层",
         "canonical": "#fff0ec",
-        "tonalRamp": ["oklch(15% 0.017 35.3)", "oklch(25% 0.017 35.3)", "oklch(38% 0.017 35.3)", "oklch(52% 0.017 35.3)", "oklch(65% 0.017 35.3)", "oklch(76% 0.017 35.3)", "oklch(87% 0.017 35.3)", "oklch(95% 0.017 35.3)"]
+        "tonalRamp": [
+          "oklch(15% 0.017 35.3)",
+          "oklch(25% 0.017 35.3)",
+          "oklch(38% 0.017 35.3)",
+          "oklch(52% 0.017 35.3)",
+          "oklch(65% 0.017 35.3)",
+          "oklch(76% 0.017 35.3)",
+          "oklch(87% 0.017 35.3)",
+          "oklch(95% 0.017 35.3)"
+        ]
       },
       "glow-amber": {
         "role": "tertiary",
         "displayName": "环境暖黄",
         "canonical": "#ffd78d",
-        "tonalRamp": ["oklch(15% 0.102 82.2)", "oklch(25% 0.102 82.2)", "oklch(38% 0.102 82.2)", "oklch(52% 0.102 82.2)", "oklch(65% 0.102 82.2)", "oklch(76% 0.102 82.2)", "oklch(87% 0.102 82.2)", "oklch(95% 0.102 82.2)"]
+        "tonalRamp": [
+          "oklch(15% 0.102 82.2)",
+          "oklch(25% 0.102 82.2)",
+          "oklch(38% 0.102 82.2)",
+          "oklch(52% 0.102 82.2)",
+          "oklch(65% 0.102 82.2)",
+          "oklch(76% 0.102 82.2)",
+          "oklch(87% 0.102 82.2)",
+          "oklch(95% 0.102 82.2)"
+        ]
       },
       "glow-coral": {
         "role": "tertiary",
         "displayName": "环境浅珊瑚",
         "canonical": "#ffb6a6",
-        "tonalRamp": ["oklch(15% 0.089 32.8)", "oklch(25% 0.089 32.8)", "oklch(38% 0.089 32.8)", "oklch(52% 0.089 32.8)", "oklch(65% 0.089 32.8)", "oklch(76% 0.089 32.8)", "oklch(87% 0.089 32.8)", "oklch(95% 0.089 32.8)"]
+        "tonalRamp": [
+          "oklch(15% 0.089 32.8)",
+          "oklch(25% 0.089 32.8)",
+          "oklch(38% 0.089 32.8)",
+          "oklch(52% 0.089 32.8)",
+          "oklch(65% 0.089 32.8)",
+          "oklch(76% 0.089 32.8)",
+          "oklch(87% 0.089 32.8)",
+          "oklch(95% 0.089 32.8)"
+        ]
       }
     },
     "typographyMeta": {
-      "display": { "displayName": "服务状态", "purpose": "Electron 中需要一眼确认的核心服务结果。" },
+      "display": {
+        "displayName": "服务状态",
+        "purpose": "Electron 中需要一眼确认的核心服务结果。"
+      },
       "brand": { "displayName": "桌面品牌", "purpose": "只用于 Electron 的 mprint 品牌名。" },
-      "page-title": { "displayName": "编辑器标题", "purpose": "系统浏览器模板编辑器的工具型页面标题。" },
+      "page-title": {
+        "displayName": "编辑器标题",
+        "purpose": "系统浏览器模板编辑器的工具型页面标题。"
+      },
       "headline": { "displayName": "桌面区块标题", "purpose": "Electron 配置区块标题。" },
       "title": { "displayName": "紧凑分区标题", "purpose": "编辑器属性区和紧凑分组标题。" },
       "body": { "displayName": "操作正文", "purpose": "说明、列表与按钮。" },
@@ -136,16 +322,33 @@
       "code": { "displayName": "参数等宽", "purpose": "SDK 示例、端点、系统名称与精确数值。" }
     },
     "shadows": [
-      { "name": "workspace-ambient", "value": "0 24px 70px rgba(78, 61, 47, 0.08)", "purpose": "Electron 服务总览与浏览器编辑工作区的轻环境分离。" },
-      { "name": "paper-lift", "value": "0 22px 58px rgba(67, 58, 46, 0.2)", "purpose": "只用于浏览器编辑器中的实体纸张。" },
-      { "name": "desktop-primary-action", "value": "0 7px 18px rgba(36, 33, 28, 0.16)", "purpose": "Electron 深色主操作的轻量抬升。" },
-      { "name": "editor-primary-action", "value": "0 8px 22px rgba(36, 33, 28, 0.16)", "purpose": "浏览器编辑器深色主操作的轻量抬升。" }
+      {
+        "name": "workspace-ambient",
+        "value": "0 24px 70px rgba(78, 61, 47, 0.08)",
+        "purpose": "Electron 服务总览与浏览器编辑工作区的轻环境分离。"
+      },
+      {
+        "name": "paper-lift",
+        "value": "0 22px 58px rgba(67, 58, 46, 0.2)",
+        "purpose": "只用于浏览器编辑器中的实体纸张。"
+      },
+      {
+        "name": "desktop-primary-action",
+        "value": "0 7px 18px rgba(36, 33, 28, 0.16)",
+        "purpose": "Electron 深色主操作的轻量抬升。"
+      },
+      {
+        "name": "editor-primary-action",
+        "value": "0 8px 22px rgba(36, 33, 28, 0.16)",
+        "purpose": "浏览器编辑器深色主操作的轻量抬升。"
+      }
     ],
     "breakpoints": [
       { "name": "desktop-compact", "value": "1050px" },
       { "name": "editor-compact", "value": "1250px" },
       { "name": "desktop-minimum", "value": "920px" },
-      { "name": "editor-minimum", "value": "1080px" }
+      { "name": "editor-minimum", "value": "1080px" },
+      { "name": "editor-short-height", "value": "680px" }
     ]
   },
   "components": [
@@ -200,9 +403,9 @@
       "name": "Browser Editor Workspace",
       "kind": "custom",
       "refersTo": "editor-workspace",
-      "description": "左侧连续检查器与右侧大画布组成的浏览器编辑工作区。",
-      "html": "<section class=\"ds-editor-workspace\"><aside><div><strong>纸张</strong><code>86 × 54 mm</code></div><div><strong>元素属性</strong><span>位置与尺寸</span></div><div><strong>图层</strong><span>点击切换</span></div></aside><main><span>纸张预览区</span></main></section>",
-      "css": ".ds-editor-workspace { display: grid; grid-template-columns: 210px 360px; overflow: hidden; width: 570px; min-height: 330px; border: 1px solid #ff6248; border-radius: 16px; background: rgba(255, 255, 255, 0.72); color: var(--ink, #24211c); box-shadow: 0 24px 70px rgba(78, 61, 47, 0.08); font-family: 'Microsoft YaHei UI', 'PingFang SC', 'Segoe UI', sans-serif; } .ds-editor-workspace aside { border-right: 1px solid #dedbd4; background: rgba(250, 250, 250, 0.9); } .ds-editor-workspace aside div { display: grid; gap: 4px; padding: 15px 17px; border-bottom: 1px solid #dedbd4; } .ds-editor-workspace strong { font-size: 14px; } .ds-editor-workspace code, .ds-editor-workspace aside span { color: #6b655c; font-family: Consolas, monospace; font-size: 11px; } .ds-editor-workspace main { display: grid; place-items: center; background-color: rgba(237, 234, 227, 0.84); background-image: linear-gradient(rgba(97, 89, 77, 0.08) 1px, transparent 1px), linear-gradient(90deg, rgba(97, 89, 77, 0.08) 1px, transparent 1px); background-size: 20px 20px; color: #6b655c; font-size: 12px; }"
+      "description": "顶部纸张弹层、左侧元素检查器和右侧大画布组成浏览器编辑工作区；快速定位跟随画布选中上下文。",
+      "html": "<section class=\"ds-editor-workspace\"><aside><div><strong>元素</strong><span>文字 / 图片</span></div><div><strong>图层</strong><span>点击切换</span></div><div><strong>元素属性</strong><span>样式 / 位置与尺寸</span></div></aside><main><span>快速定位工具</span><span>纸张预览区</span></main></section>",
+      "css": ".ds-editor-workspace { display: grid; grid-template-columns: 210px 360px; width: 570px; height: calc(100vh - 124px); min-height: 560px; overflow: hidden; border: 1px solid #ff6248; border-radius: 16px; background: rgba(255, 255, 255, 0.72); color: var(--ink, #24211c); box-shadow: 0 24px 70px rgba(78, 61, 47, 0.08); font-family: 'Microsoft YaHei UI', 'PingFang SC', 'Segoe UI', sans-serif; } .ds-editor-workspace aside { overflow-y: auto; border-right: 1px solid #dedbd4; background: rgba(250, 250, 250, 0.9); } .ds-editor-workspace aside div { display: grid; gap: 4px; padding: 15px 17px; border-bottom: 1px solid #dedbd4; } .ds-editor-workspace strong { font-size: 14px; } .ds-editor-workspace code, .ds-editor-workspace aside span { color: #6b655c; font-family: Consolas, monospace; font-size: 11px; } .ds-editor-workspace main { display: grid; place-items: center; background-color: rgba(237, 234, 227, 0.84); background-image: linear-gradient(rgba(97, 89, 77, 0.08) 1px, transparent 1px), linear-gradient(90deg, rgba(97, 89, 77, 0.08) 1px, transparent 1px); background-size: 20px 20px; color: #6b655c; font-size: 12px; }"
     },
     {
       "name": "Selected Layer Item",
@@ -229,25 +432,78 @@
       "`#fafafa` 全局底色上叠加 32px 细网格。",
       "左上暖黄、右下珊瑚的低透明模糊环境光晕。",
       "白色半透明工作表面、珊瑚细边界和深墨文字。",
-      "编辑器左侧配置与属性，右侧 20px 测量网格、标尺和白纸。",
+      "编辑器标题右侧紧邻纸张入口和一级打印机默认纸张开关；纸张弹层只承载尺寸与方向。左侧只保留元素、图层和元素属性，右侧为定位工具、20px 测量网格、标尺和白纸。",
       "Windows 系统中文字体为主，参数、地址和尺寸使用等宽字体。",
       "状态有文字与结构反馈，无装饰性动效。"
     ],
     "rules": [
-      { "name": "The Two-Surface Token Rule", "body": "两个页面共享视觉语义，但桌面与编辑器的珊瑚、柔墨和铅线值按各自样式表生效；不要为了表面一致而擅自合并近似 token。", "section": "colors" },
-      { "name": "The Ambient-Only Glow Rule", "body": "暖黄和浅珊瑚只能以低透明、高模糊背景光出现，不得成为按钮、徽标、文字或边框颜色。", "section": "colors" },
-      { "name": "The White Sheet Rule", "body": "实体白是输入和打印介质的清晰基准；纸张必须保持不透明纯白，不受环境光晕染色。", "section": "colors" },
-      { "name": "The Surface Hierarchy Rule", "body": "Electron 可以用衬线放大服务状态，浏览器编辑器必须使用紧凑系统字标题；不要把展示型衬线标题带入属性面板。", "section": "typography" },
-      { "name": "The Measured Data Rule", "body": "地址、代码、毫米尺寸和层级编号使用等宽字体，帮助扫描和对齐可测试参数。", "section": "typography" },
-      { "name": "The Two-Surface Responsibility Rule", "body": "Electron 只承载服务配置和编辑器入口；模板编辑必须在系统浏览器的大画布中完成，不能重新塞回桌面窗口。", "section": "layout" },
-      { "name": "The Control-and-Result Rule", "body": "浏览器编辑器的配置、属性和图层留在左侧，纸张结果持续留在右侧；不要让检查器覆盖或替换纸张预览。", "section": "layout" },
-      { "name": "The Atmospheric Depth Rule", "body": "光晕属于背景环境，阴影属于工作区、纸张和主要提交动作；不要让光晕穿透纸张或给普通表单控件制造漂浮层级。", "section": "elevation" },
-      { "name": "The Square Paper Rule", "body": "应用容器可以温和圆润，打印纸张与纸上元素必须保持真实裁切的直角。", "section": "shapes" }
+      {
+        "name": "The Two-Surface Token Rule",
+        "body": "两个页面共享视觉语义，但桌面与编辑器的珊瑚、柔墨和铅线值按各自样式表生效；不要为了表面一致而擅自合并近似 token。",
+        "section": "colors"
+      },
+      {
+        "name": "The Ambient-Only Glow Rule",
+        "body": "暖黄和浅珊瑚只能以低透明、高模糊背景光出现，不得成为按钮、徽标、文字或边框颜色。",
+        "section": "colors"
+      },
+      {
+        "name": "The White Sheet Rule",
+        "body": "实体白是输入和打印介质的清晰基准；纸张必须保持不透明纯白，不受环境光晕染色。",
+        "section": "colors"
+      },
+      {
+        "name": "The Default Printer Paper Rule",
+        "body": "useDefaultPageSize 是纸张入口旁的一级开关，不藏入弹层。启用时必须明确说明打印机接管实际纸张尺寸，而模板宽高仍负责编辑坐标与预览。",
+        "section": "colors"
+      },
+      {
+        "name": "The Surface Hierarchy Rule",
+        "body": "Electron 可以用衬线放大服务状态，浏览器编辑器必须使用紧凑系统字标题；不要把展示型衬线标题带入属性面板。",
+        "section": "typography"
+      },
+      {
+        "name": "The Measured Data Rule",
+        "body": "地址、代码、毫米尺寸和层级编号使用等宽字体，帮助扫描和对齐可测试参数。",
+        "section": "typography"
+      },
+      {
+        "name": "The Two-Surface Responsibility Rule",
+        "body": "Electron 只承载服务配置和编辑器入口；模板编辑必须在系统浏览器的大画布中完成，不能重新塞回桌面窗口。",
+        "section": "layout"
+      },
+      {
+        "name": "The Control-and-Result Rule",
+        "body": "浏览器编辑器的配置、属性和图层留在左侧，纸张结果持续留在右侧；不要让检查器覆盖或替换纸张预览。",
+        "section": "layout"
+      },
+      {
+        "name": "The Two Centers Rule",
+        "body": "“快速定位”的水平居中、垂直居中和页面中心控制选中元素框相对纸张的位置；文本属性 `verticalAlign` 的顶部、居中和底部控制文字内容在自身文本框内的垂直对齐。两种“居中”必须分别表达，不能混成一个不明确的操作。",
+        "section": "layout"
+      },
+      {
+        "name": "The Open Topbar Rule",
+        "body": "Electron 顶栏依靠留白和下方内容分组建立层级，不增加多余的底边线。",
+        "section": "layout"
+      },
+      {
+        "name": "The Atmospheric Depth Rule",
+        "body": "光晕属于背景环境，阴影属于工作区、纸张和主要提交动作；不要让光晕穿透纸张或给普通表单控件制造漂浮层级。",
+        "section": "elevation"
+      },
+      {
+        "name": "The Square Paper Rule",
+        "body": "应用容器可以温和圆润，打印纸张与纸上元素必须保持真实裁切的直角。",
+        "section": "shapes"
+      }
     ],
     "dos": [
       "Do 让 Electron 首屏直接显示服务状态、端点、打印机和浏览器编辑器入口。",
       "Do 在两个表面维持相同的 32px 全局网格、对角环境光和深墨信息骨架。",
       "Do 保持浏览器编辑器“左侧控制、右侧结果”的稳定结构，并让检查器独立滚动。",
+      "Do 让左栏只承担元素、图层和当前属性，把纸张配置放在顶部，把选中元素定位放在画布上下文中。",
+      "Do 明确区分元素框相对纸张居中与文字内容在自身文本框内垂直居中。",
       "Do 区分全局 32px 背景网格与画布 20px 测量网格及标尺。",
       "Do 对成功、错误、等待和选中状态同时提供文字、色彩与边界提示。",
       "Do 把地址、代码、毫米尺寸和图层编号交给等宽字体。"
@@ -257,6 +513,7 @@
       "Don't 把暖黄与浅珊瑚光晕用于控件、文字、徽标或纸张内容。",
       "Don't 用大面积实色珊瑚、强渐变或装饰插画稀释校准重点。",
       "Don't 给普通卡片、列表项和输入框增加阴影或漂浮动效。",
+      "Don't 给 Electron 顶栏增加没有信息分组作用的底边线。",
       "Don't 把纸张做成圆角卡片，或让检查器覆盖打印结果。",
       "Don't 只用红绿颜色表达运行或错误状态，必须保留可读文字。"
     ]

@@ -25,6 +25,72 @@
             <p>按毫米配置纸张与打印元素</p>
           </div>
         </div>
+        <div class="topbar-context">
+          <div id="paperControl" class="paper-control">
+            <button
+              id="paperSettingsButton"
+              class="button button-secondary paper-settings-button"
+              type="button"
+              aria-expanded="false"
+              aria-controls="paperPopover"
+            >
+              <svg viewBox="0 0 20 20" aria-hidden="true">
+                <path d="M4 3h12v14H4zM4 7h12M8 3v4" />
+              </svg>
+              <span>纸张</span>
+              <strong id="paperSummary">86 × 54 mm</strong>
+            </button>
+            <section id="paperPopover" class="paper-popover" hidden>
+              <div class="popover-heading">
+                <div>
+                  <h2>纸张设置</h2>
+                  <p>选择常用尺寸或输入毫米数值</p>
+                </div>
+                <button
+                  id="closePaperPopover"
+                  class="popover-close"
+                  type="button"
+                  aria-label="关闭纸张设置"
+                >
+                  <svg viewBox="0 0 20 20" aria-hidden="true">
+                    <path d="m5 5 10 10M15 5 5 15" />
+                  </svg>
+                </button>
+              </div>
+              <div class="form-grid paper-form-grid">
+                <label class="field field-wide">
+                  <span>常用尺寸</span>
+                  <select id="pagePreset">
+                    <option value="card">证卡 86 × 54 mm</option>
+                    <option value="A4">A4 210 × 297 mm</option>
+                    <option value="A5">A5 148 × 210 mm</option>
+                    <option value="A6">A6 105 × 148 mm</option>
+                    <option value="photo-6in">照片 102 × 152 mm</option>
+                    <option value="custom">自定义</option>
+                  </select>
+                </label>
+                <label class="field"
+                  ><span>宽度 mm</span
+                  ><input id="pageWidth" type="number" min="1" max="1200" step="0.1"
+                /></label>
+                <label class="field"
+                  ><span>高度 mm</span
+                  ><input id="pageHeight" type="number" min="1" max="1200" step="0.1"
+                /></label>
+                <label class="check field-wide"
+                  ><input id="landscape" type="checkbox" /><span>横向打印</span></label
+                >
+              </div>
+            </section>
+          </div>
+          <label
+            class="default-paper-toggle"
+            title="对应 useDefaultPageSize；模板宽高仍用于布局与预览"
+          >
+            <input id="useDefaultPageSize" type="checkbox" />
+            <span>打印机默认纸张</span>
+          </label>
+        </div>
         <div class="topbar-actions">
           <span id="message" class="message" role="status"></span>
           <button id="copyButton" class="button button-secondary" type="button">
@@ -39,37 +105,6 @@
 
       <section class="workspace">
         <aside class="inspector">
-          <section class="panel-section paper-section">
-            <div class="section-heading">
-              <h2>纸张</h2>
-              <span id="paperSummary">86 × 54 mm</span>
-            </div>
-            <div class="form-grid">
-              <label class="field field-wide">
-                <span>常用尺寸</span>
-                <select id="pagePreset">
-                  <option value="card">证卡 86 × 54 mm</option>
-                  <option value="A4">A4 210 × 297 mm</option>
-                  <option value="A5">A5 148 × 210 mm</option>
-                  <option value="A6">A6 105 × 148 mm</option>
-                  <option value="photo-6in">照片 102 × 152 mm</option>
-                  <option value="custom">自定义</option>
-                </select>
-              </label>
-              <label class="field"
-                ><span>宽度 mm</span
-                ><input id="pageWidth" type="number" min="1" max="1200" step="0.1"
-              /></label>
-              <label class="field"
-                ><span>高度 mm</span
-                ><input id="pageHeight" type="number" min="1" max="1200" step="0.1"
-              /></label>
-              <label class="check field-wide"
-                ><input id="landscape" type="checkbox" /><span>横向打印</span></label
-              >
-            </div>
-          </section>
-
           <section class="panel-section">
             <div class="section-heading">
               <h2>元素</h2>
@@ -93,14 +128,6 @@
             </div>
           </section>
 
-          <section id="propertiesSection" class="panel-section properties-section">
-            <div class="section-heading">
-              <h2>元素属性</h2>
-              <button id="deleteElement" class="delete-button" type="button">删除</button>
-            </div>
-            <div id="propertyForm" class="form-grid property-grid"></div>
-          </section>
-
           <section class="panel-section layers-section">
             <div class="section-heading">
               <h2>图层</h2>
@@ -108,11 +135,88 @@
             </div>
             <div id="elementList" class="element-list"></div>
           </section>
+
+          <section id="propertiesSection" class="panel-section properties-section">
+            <div class="section-heading">
+              <h2>元素属性</h2>
+              <button id="deleteElement" class="delete-button" type="button">删除</button>
+            </div>
+            <div id="propertyForm" class="form-grid property-grid"></div>
+          </section>
         </aside>
 
         <section id="stage" class="stage" aria-label="打印纸张预览">
           <div class="ruler ruler-x" aria-hidden="true"></div>
           <div class="ruler ruler-y" aria-hidden="true"></div>
+          <div id="canvasToolbar" class="canvas-toolbar" aria-label="选中元素快速定位">
+            <span>元素定位</span>
+            <div class="toolbar-group">
+              <button type="button" data-position="left" aria-label="左对齐纸张" title="左对齐纸张">
+                <svg viewBox="0 0 20 20" aria-hidden="true">
+                  <path d="M4 3v14M7 6h8M7 10h5M7 14h7" />
+                </svg>
+              </button>
+              <button
+                type="button"
+                data-position="horizontal"
+                aria-label="水平居中"
+                title="水平居中"
+              >
+                <svg viewBox="0 0 20 20" aria-hidden="true">
+                  <path d="M10 3v14M5 6h10M7 10h6M6 14h8" />
+                </svg>
+              </button>
+              <button
+                type="button"
+                data-position="right"
+                aria-label="右对齐纸张"
+                title="右对齐纸张"
+              >
+                <svg viewBox="0 0 20 20" aria-hidden="true">
+                  <path d="M16 3v14M5 6h8M8 10h5M6 14h7" />
+                </svg>
+              </button>
+            </div>
+            <div class="toolbar-divider" aria-hidden="true"></div>
+            <div class="toolbar-group">
+              <button
+                type="button"
+                data-position="top"
+                aria-label="顶部对齐纸张"
+                title="顶部对齐纸张"
+              >
+                <svg viewBox="0 0 20 20" aria-hidden="true">
+                  <path d="M3 4h14M6 7v8M10 7v5M14 7v7" />
+                </svg>
+              </button>
+              <button type="button" data-position="vertical" aria-label="垂直居中" title="垂直居中">
+                <svg viewBox="0 0 20 20" aria-hidden="true">
+                  <path d="M3 10h14M6 5v10M10 7v6M14 6v8" />
+                </svg>
+              </button>
+              <button
+                type="button"
+                data-position="bottom"
+                aria-label="底部对齐纸张"
+                title="底部对齐纸张"
+              >
+                <svg viewBox="0 0 20 20" aria-hidden="true">
+                  <path d="M3 16h14M6 5v8M10 8v5M14 6v7" />
+                </svg>
+              </button>
+            </div>
+            <div class="toolbar-divider" aria-hidden="true"></div>
+            <button
+              type="button"
+              data-position="center"
+              aria-label="移动到页面中心"
+              title="移动到页面中心"
+            >
+              <svg viewBox="0 0 20 20" aria-hidden="true">
+                <path d="M10 3v14M3 10h14M6 6h8v8H6z" />
+              </svg>
+            </button>
+          </div>
           <div id="paper" class="paper"></div>
           <div id="paperMeta" class="paper-meta">—</div>
           <div class="stage-help">点击元素选择 · 拖动调整位置</div>

@@ -115,6 +115,10 @@ function normalizeText(value: unknown, label: string): PrintTextItem {
   }
   const rotation = finite(value.rotate) ?? 0
   const align = value.align === 'center' || value.align === 'right' ? value.align : 'left'
+  const verticalAlign =
+    value.verticalAlign === 'middle' || value.verticalAlign === 'bottom'
+      ? value.verticalAlign
+      : 'top'
   return {
     content: value.content,
     xMm,
@@ -135,6 +139,7 @@ function normalizeText(value: unknown, label: string): PrintTextItem {
         ? value.color
         : '#000000',
     align,
+    verticalAlign,
     lineHeight: Math.max(0.5, finite(value.lineHeight) ?? 1.2),
     rotate: rotations.has(rotation) ? (rotation as 0 | 90 | 180 | 270) : 0
   }
@@ -225,7 +230,13 @@ function renderImage(item: PrintImageItem, index: number): string {
 }
 
 function renderText(item: PrintTextItem): string {
-  return `<div style="position:absolute;box-sizing:border-box;overflow:hidden;white-space:pre-wrap;overflow-wrap:anywhere;left:${item.xMm}mm;top:${item.yMm}mm;width:${item.widthMm}mm;height:${item.heightMm}mm;font:${item.fontWeight} ${item.fontSizePt}pt/${item.lineHeight} '${escapeHtml(item.fontFamily ?? 'Microsoft YaHei')}';color:${item.color};text-align:${item.align};transform:rotate(${item.rotate}deg);transform-origin:center">${escapeHtml(item.content)}</div>`
+  const justifyContent =
+    item.verticalAlign === 'middle'
+      ? 'center'
+      : item.verticalAlign === 'bottom'
+        ? 'flex-end'
+        : 'flex-start'
+  return `<div style="position:absolute;display:flex;flex-direction:column;justify-content:${justifyContent};box-sizing:border-box;overflow:hidden;left:${item.xMm}mm;top:${item.yMm}mm;width:${item.widthMm}mm;height:${item.heightMm}mm;font:${item.fontWeight} ${item.fontSizePt}pt/${item.lineHeight} '${escapeHtml(item.fontFamily ?? 'Microsoft YaHei')}';color:${item.color};transform:rotate(${item.rotate}deg);transform-origin:center"><div style="width:100%;white-space:pre-wrap;overflow-wrap:anywhere;text-align:${item.align}">${escapeHtml(item.content)}</div></div>`
 }
 
 function renderHtml(request: PrintRequest, preview: boolean): string {

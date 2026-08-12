@@ -11,6 +11,7 @@ const presets = {
 const state = {
   page: { ...presets.card },
   landscape: false,
+  useDefaultPageSize: false,
   selectedId: null,
   items: [
     {
@@ -26,6 +27,7 @@ const state = {
       fontWeight: 700,
       color: '#24211c',
       align: 'left',
+      verticalAlign: 'top',
       lineHeight: 1.2,
       rotate: 0
     },
@@ -42,6 +44,7 @@ const state = {
       fontWeight: 400,
       color: '#ff6248',
       align: 'left',
+      verticalAlign: 'top',
       lineHeight: 1.2,
       rotate: 0
     }
@@ -59,6 +62,10 @@ const paper = byId('paper')
 const stage = byId('stage')
 const paperMeta = byId('paperMeta')
 const paperSummary = byId('paperSummary')
+const paperControl = byId('paperControl')
+const paperSettingsButton = byId('paperSettingsButton')
+const paperPopover = byId('paperPopover')
+const canvasToolbar = byId('canvasToolbar')
 const elementList = byId('elementList')
 const elementCount = byId('elementCount')
 const propertyForm = byId('propertyForm')
@@ -67,6 +74,7 @@ const pagePreset = byId('pagePreset')
 const pageWidth = byId('pageWidth')
 const pageHeight = byId('pageHeight')
 const landscape = byId('landscape')
+const useDefaultPageSize = byId('useDefaultPageSize')
 const imageInput = byId('imageInput')
 const message = byId('message')
 let canvasScale = 1
@@ -98,6 +106,7 @@ function requestPayload() {
         fontWeight: item.fontWeight,
         color: item.color,
         align: item.align,
+        verticalAlign: item.verticalAlign,
         lineHeight: item.lineHeight,
         rotate: item.rotate
       })),
@@ -112,7 +121,11 @@ function requestPayload() {
         fit: item.fit,
         rotate: item.rotate
       })),
-    printer: { silent: true, copies: 1 }
+    printer: {
+      silent: true,
+      copies: 1,
+      useDefaultPageSize: state.useDefaultPageSize
+    }
   }
 }
 
@@ -192,6 +205,18 @@ function renderProperties() {
         ]
       }),
       control(
+        '垂直对齐',
+        item.verticalAlign || 'top',
+        (value) => updateSelected('verticalAlign', value),
+        {
+          choices: [
+            ['top', '顶部'],
+            ['middle', '居中'],
+            ['bottom', '底部']
+          ]
+        }
+      ),
+      control(
         '字号 pt',
         item.fontSizePt || 12,
         (value) => updateSelected('fontSizePt', Number(value)),
@@ -232,7 +257,17 @@ function renderProperties() {
     )
   }
 
-  propertyForm.append(
+  const details = document.createElement('details')
+  details.className = 'advanced-properties'
+  const summary = document.createElement('summary')
+  const summaryTitle = document.createElement('strong')
+  summaryTitle.textContent = '位置与尺寸'
+  const summaryMeta = document.createElement('span')
+  summaryMeta.textContent = `${item.xMm}, ${item.yMm} · ${item.widthMm} × ${item.heightMm} mm`
+  summary.append(summaryTitle, summaryMeta)
+  const geometryGrid = document.createElement('div')
+  geometryGrid.className = 'form-grid geometry-grid'
+  geometryGrid.append(
     control('X mm', item.xMm, (value) => updateSelected('xMm', Number(value)), { step: '0.1' }),
     control('Y mm', item.yMm, (value) => updateSelected('yMm', Number(value)), { step: '0.1' }),
     control('宽度 mm', item.widthMm, (value) => updateSelected('widthMm', Number(value)), {
@@ -250,6 +285,8 @@ function renderProperties() {
       ]
     })
   )
+  details.append(summary, geometryGrid)
+  propertyForm.append(details)
 }
 
 function renderList() {
@@ -299,6 +336,7 @@ function startDrag(event, item) {
 
 function renderCanvas() {
   const size = orientedPage()
+  canvasToolbar.hidden = !selectedItem()
   const maxWidth = Math.max(420, stage.clientWidth - 150)
   const maxHeight = Math.max(420, stage.clientHeight - 130)
   canvasScale = Math.min(maxWidth / size.widthMm, maxHeight / size.heightMm)
@@ -322,6 +360,14 @@ function renderCanvas() {
       visual.style.lineHeight = String(item.lineHeight || 1.2)
       visual.style.color = item.color || '#000000'
       visual.style.textAlign = item.align || 'left'
+      visual.style.display = 'flex'
+      visual.style.flexDirection = 'column'
+      visual.style.justifyContent =
+        item.verticalAlign === 'middle'
+          ? 'center'
+          : item.verticalAlign === 'bottom'
+            ? 'flex-end'
+            : 'flex-start'
       visual.style.whiteSpace = 'pre-wrap'
       visual.style.overflowWrap = 'anywhere'
     }
@@ -338,8 +384,12 @@ function renderCanvas() {
     })
     paper.append(visual)
   })
-  paperSummary.textContent = `${size.widthMm} × ${size.heightMm} mm`
-  paperMeta.textContent = `${size.widthMm} × ${size.heightMm} mm · ${Math.round(canvasScale * 100) / 100}px/mm`
+  paperSummary.textContent = state.useDefaultPageSize
+    ? `默认 · ${size.widthMm} × ${size.heightMm}`
+    : `${size.widthMm} × ${size.heightMm} mm`
+  paperMeta.textContent = state.useDefaultPageSize
+    ? `打印机默认纸张 · 模板 ${size.widthMm} × ${size.heightMm} mm · ${Math.round(canvasScale * 100) / 100}px/mm`
+    : `${size.widthMm} × ${size.heightMm} mm · ${Math.round(canvasScale * 100) / 100}px/mm`
 }
 
 function render(withProperties = false) {
@@ -362,11 +412,43 @@ function addText() {
     fontWeight: 400,
     color: '#24211c',
     align: 'left',
+    verticalAlign: 'top',
     lineHeight: 1.2,
     rotate: 0
   }
   state.items.push(item)
   state.selectedId = item.id
+  render(true)
+}
+
+function positionSelected(mode) {
+  const item = selectedItem()
+  if (!item) {
+    setMessage('请先选择一个元素。', true)
+    return
+  }
+  const size = orientedPage()
+  if (mode === 'left') item.xMm = 0
+  if (mode === 'horizontal' || mode === 'center') {
+    item.xMm = Math.round(Math.max(0, (size.widthMm - item.widthMm) / 2) * 10) / 10
+  }
+  if (mode === 'right') item.xMm = Math.max(0, Math.round((size.widthMm - item.widthMm) * 10) / 10)
+  if (mode === 'top') item.yMm = 0
+  if (mode === 'vertical' || mode === 'center') {
+    item.yMm = Math.round(Math.max(0, (size.heightMm - item.heightMm) / 2) * 10) / 10
+  }
+  if (mode === 'bottom')
+    item.yMm = Math.max(0, Math.round((size.heightMm - item.heightMm) * 10) / 10)
+  const labels = {
+    left: '元素已对齐纸张左侧。',
+    horizontal: '元素已水平居中。',
+    right: '元素已对齐纸张右侧。',
+    top: '元素已对齐纸张顶部。',
+    vertical: '元素已垂直居中。',
+    bottom: '元素已对齐纸张底部。',
+    center: '元素已移动到页面中心。'
+  }
+  setMessage(labels[mode] || '元素位置已更新。')
   render(true)
 }
 
@@ -412,6 +494,21 @@ async function runAction(button, busyText, action) {
 
 pageWidth.value = String(state.page.widthMm)
 pageHeight.value = String(state.page.heightMm)
+function setPaperPopover(open) {
+  paperPopover.hidden = !open
+  paperSettingsButton.setAttribute('aria-expanded', String(open))
+}
+paperSettingsButton.addEventListener('click', () => setPaperPopover(paperPopover.hidden))
+byId('closePaperPopover').addEventListener('click', () => setPaperPopover(false))
+document.addEventListener('click', (event) => {
+  if (!paperControl.contains(event.target)) setPaperPopover(false)
+})
+document.addEventListener('keydown', (event) => {
+  if (event.key === 'Escape') {
+    setPaperPopover(false)
+    paperSettingsButton.focus()
+  }
+})
 pagePreset.addEventListener('change', () => {
   const preset = presets[pagePreset.value]
   if (preset) {
@@ -433,8 +530,20 @@ landscape.addEventListener('change', () => {
   state.landscape = landscape.checked
   render()
 })
+useDefaultPageSize.addEventListener('change', () => {
+  state.useDefaultPageSize = useDefaultPageSize.checked
+  setMessage(
+    state.useDefaultPageSize
+      ? '打印时将使用打印机默认纸张；模板宽高继续用于布局与预览。'
+      : '打印时将使用当前模板纸张尺寸。'
+  )
+  render()
+})
 byId('addText').addEventListener('click', addText)
 byId('addImage').addEventListener('click', () => imageInput.click())
+document.querySelectorAll('[data-position]').forEach((button) => {
+  button.addEventListener('click', () => positionSelected(button.dataset.position))
+})
 imageInput.addEventListener('change', async () => {
   const file = imageInput.files?.[0]
   if (!file) return
