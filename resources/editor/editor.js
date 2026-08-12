@@ -499,12 +499,15 @@ function setPaperPopover(open) {
   paperSettingsButton.setAttribute('aria-expanded', String(open))
 }
 paperSettingsButton.addEventListener('click', () => setPaperPopover(paperPopover.hidden))
-byId('closePaperPopover').addEventListener('click', () => setPaperPopover(false))
+byId('closePaperPopover').addEventListener('click', () => {
+  setPaperPopover(false)
+  paperSettingsButton.focus()
+})
 document.addEventListener('click', (event) => {
   if (!paperControl.contains(event.target)) setPaperPopover(false)
 })
 document.addEventListener('keydown', (event) => {
-  if (event.key === 'Escape') {
+  if (event.key === 'Escape' && !paperPopover.hidden) {
     setPaperPopover(false)
     paperSettingsButton.focus()
   }
