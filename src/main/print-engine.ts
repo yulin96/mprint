@@ -205,6 +205,13 @@ function escapeHtml(value: string): string {
     .replace(/>/g, '&gt;')
 }
 
+function escapeCssString(value: string): string {
+  return value
+    .replace(/\\/g, '\\\\')
+    .replace(/'/g, "\\'")
+    .replace(/[\r\n]/g, ' ')
+}
+
 function imageExtension(mime: string): string {
   return mime.includes('png') ? 'png' : mime.includes('webp') ? 'webp' : 'jpg'
 }
@@ -236,7 +243,7 @@ function renderText(item: PrintTextItem): string {
       : item.verticalAlign === 'bottom'
         ? 'flex-end'
         : 'flex-start'
-  return `<div style="position:absolute;display:flex;flex-direction:column;justify-content:${justifyContent};box-sizing:border-box;overflow:hidden;left:${item.xMm}mm;top:${item.yMm}mm;width:${item.widthMm}mm;height:${item.heightMm}mm;font:${item.fontWeight} ${item.fontSizePt}pt/${item.lineHeight} '${escapeHtml(item.fontFamily ?? 'Microsoft YaHei')}';color:${item.color};transform:rotate(${item.rotate}deg);transform-origin:center"><div style="width:100%;white-space:pre-wrap;overflow-wrap:anywhere;text-align:${item.align}">${escapeHtml(item.content)}</div></div>`
+  return `<div style="position:absolute;display:flex;flex-direction:column;justify-content:${justifyContent};box-sizing:border-box;overflow:hidden;left:${item.xMm}mm;top:${item.yMm}mm;width:${item.widthMm}mm;height:${item.heightMm}mm;font:${item.fontWeight} ${item.fontSizePt}pt/${item.lineHeight} '${escapeHtml(escapeCssString(item.fontFamily ?? 'Microsoft YaHei'))}';color:${item.color};transform:rotate(${item.rotate}deg);transform-origin:center"><div style="width:100%;white-space:pre-wrap;overflow-wrap:anywhere;text-align:${item.align}">${escapeHtml(item.content)}</div></div>`
 }
 
 function renderHtml(request: PrintRequest, preview: boolean): string {

@@ -204,6 +204,8 @@ mprint 用一套连续的视觉系统连接两个职责明确的表面：Electro
 
 **The Default Printer Paper Rule.** `useDefaultPageSize` 是纸张入口旁的一级开关，不藏入弹层。启用时必须明确说明打印机接管实际纸张尺寸，而模板宽高仍负责编辑坐标与预览，避免把“打印纸张”和“模板画布”混为一谈。
 
+**The Semantic Toggle Rule.** “打印机默认纸张”启用后，复选标记、文字、边界和浅底统一使用运行绿语义；不要在绿色状态容器中保留珊瑚勾选标记。
+
 ## Typography
 
 **Display Font:** Georgia（回退到 Times New Roman 与系统衬线字体）  
@@ -295,6 +297,7 @@ Electron 配置面板最小宽度为 920px，外壳最大宽度 1400px，默认�
 - **Style:** 实体白底、1px 深铅线、8px 圆角；浏览器属性字段高 35px，Electron 端口输入高 42px。
 - **Focus:** 3px 半透明珊瑚轮廓加 2px 外偏移，不以阴影代替聚焦可见性。
 - **Error / Disabled:** 错误消息使用故障红并靠近对应操作；禁用按钮降至约 0.55 不透明度并使用等待光标。
+- **Font Family:** 字体字段使用可输入组合框，允许直接填写已安装字体名称；字段标题旁提供“读取系统字体”，授权成功后显示绿色字体数量，浏览器不支持或拒绝权限时保留手动输入路径。
 
 ### Navigation
 

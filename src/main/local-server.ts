@@ -149,7 +149,8 @@ export class LocalPrintServer {
     const content = await readFile(join(app.getAppPath(), 'resources', 'editor', fileName))
     response.writeHead(200, {
       'Content-Type': contentTypes[fileName] ?? 'application/octet-stream',
-      'Cache-Control': 'no-cache'
+      'Cache-Control': 'no-cache',
+      'Permissions-Policy': 'local-fonts=(self)'
     })
     response.end(content)
   }

@@ -8,6 +8,9 @@ const presets = {
   'photo-6in': { widthMm: 102, heightMm: 152 }
 }
 
+const fontFamilies = new Set(['Microsoft YaHei', 'SimSun', 'SimHei', 'Arial'])
+let availableSystemFontCount = 0
+
 const state = {
   page: { ...presets.card },
   landscape: false,
@@ -172,6 +175,98 @@ function updateSelected(key, value) {
   renderCanvas()
 }
 
+function fillFontOptions(datalist) {
+  datalist.replaceChildren()
+  Array.from(fontFamilies)
+    .sort((left, right) => left.localeCompare(right, 'zh-CN'))
+    .forEach((family) => {
+      const option = document.createElement('option')
+      option.value = family
+      datalist.append(option)
+    })
+}
+
+async function loadSystemFonts(button, datalist) {
+  if (typeof window.queryLocalFonts !== 'function') {
+    setMessage('当前浏览器不支持读取系统字体，可直接输入打印电脑已安装的字体名称。', true)
+    return
+  }
+
+  const originalLabel = button.textContent
+  button.disabled = true
+  button.textContent = '读取中…'
+  try {
+    const fonts = await window.queryLocalFonts()
+    const loadedFamilies = new Set()
+    fonts.forEach((font) => {
+      if (typeof font.family === 'string' && font.family.trim()) {
+        loadedFamilies.add(font.family.trim())
+        fontFamilies.add(font.family.trim())
+      }
+    })
+    availableSystemFontCount = loadedFamilies.size
+    fillFontOptions(datalist)
+    button.textContent = `系统字体 ${availableSystemFontCount}`
+    button.classList.add('is-loaded')
+    button.setAttribute('aria-label', `重新读取系统字体，当前已读取 ${availableSystemFontCount} 个`)
+    setMessage(`已读取 ${availableSystemFontCount} 个可用字体，可输入名称筛选。`)
+  } catch (error) {
+    button.textContent = originalLabel
+    const denied = error instanceof DOMException && error.name === 'NotAllowedError'
+    setMessage(
+      denied
+        ? '未获得系统字体权限，可直接输入打印电脑已安装的字体名称。'
+        : '系统字体读取失败，可直接输入打印电脑已安装的字体名称。',
+      true
+    )
+  } finally {
+    button.disabled = false
+  }
+}
+
+function fontControl(item) {
+  const wrapper = document.createElement('div')
+  wrapper.className = 'field font-field'
+  const heading = document.createElement('div')
+  heading.className = 'field-heading'
+  const caption = document.createElement('label')
+  caption.textContent = '字体'
+  caption.setAttribute('for', 'fontFamilyInput')
+  const loadButton = document.createElement('button')
+  loadButton.type = 'button'
+  loadButton.className = 'field-link'
+  loadButton.textContent = availableSystemFontCount
+    ? `系统字体 ${availableSystemFontCount}`
+    : '读取系统字体'
+  if (availableSystemFontCount) {
+    loadButton.classList.add('is-loaded')
+    loadButton.setAttribute(
+      'aria-label',
+      `重新读取系统字体，当前已读取 ${availableSystemFontCount} 个`
+    )
+  }
+  const input = document.createElement('input')
+  input.type = 'text'
+  input.id = 'fontFamilyInput'
+  input.value = item.fontFamily || 'Microsoft YaHei'
+  input.placeholder = '输入已安装字体名称'
+  input.title = '输入打印电脑已安装的字体名称'
+  input.setAttribute('list', 'fontFamilyOptions')
+  input.autocomplete = 'off'
+  const datalist = document.createElement('datalist')
+  datalist.id = 'fontFamilyOptions'
+  fontFamilies.add(input.value)
+  fillFontOptions(datalist)
+  input.addEventListener('input', () => updateSelected('fontFamily', input.value))
+  loadButton.addEventListener('click', (event) => {
+    event.preventDefault()
+    void loadSystemFonts(loadButton, datalist)
+  })
+  heading.append(caption, loadButton)
+  wrapper.append(heading, input, datalist)
+  return wrapper
+}
+
 function renderProperties() {
   propertyForm.replaceChildren()
   const item = selectedItem()
@@ -184,19 +279,7 @@ function renderProperties() {
         type: 'textarea',
         wide: true
       }),
-      control(
-        '字体',
-        item.fontFamily || 'Microsoft YaHei',
-        (value) => updateSelected('fontFamily', value),
-        {
-          choices: [
-            ['Microsoft YaHei', '微软雅黑'],
-            ['SimSun', '宋体'],
-            ['SimHei', '黑体'],
-            ['Arial', 'Arial']
-          ]
-        }
-      ),
+      fontControl(item),
       control('对齐', item.align || 'left', (value) => updateSelected('align', value), {
         choices: [
           ['left', '左对齐'],

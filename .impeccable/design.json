@@ -458,6 +458,11 @@
         "section": "colors"
       },
       {
+        "name": "The Semantic Toggle Rule",
+        "body": "打印机默认纸张启用后，复选标记、文字、边界和浅底统一使用运行绿语义；不要在绿色状态容器中保留珊瑚勾选标记。",
+        "section": "colors"
+      },
+      {
         "name": "The Surface Hierarchy Rule",
         "body": "Electron 可以用衬线放大服务状态，浏览器编辑器必须使用紧凑系统字标题；不要把展示型衬线标题带入属性面板。",
         "section": "typography"
@@ -465,6 +470,11 @@
       {
         "name": "The Measured Data Rule",
         "body": "地址、代码、毫米尺寸和层级编号使用等宽字体，帮助扫描和对齐可测试参数。",
+        "section": "typography"
+      },
+      {
+        "name": "The Font Family Input Rule",
+        "body": "字体字段使用可输入组合框，并在标题旁提供系统字体读取；授权成功显示绿色数量，不支持或拒绝权限时保留手动输入路径。",
         "section": "typography"
       },
       {
