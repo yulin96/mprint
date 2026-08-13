@@ -395,6 +395,7 @@ export async function openPrintPreview(value: unknown): Promise<void> {
       width: Math.min(1200, Math.max(560, Math.round(size.widthMm * 4) + 96)),
       height: Math.min(1000, Math.max(600, Math.round(size.heightMm * 4) + 96)),
       autoHideMenuBar: true,
+      alwaysOnTop: true,
       webPreferences: { nodeIntegration: false, contextIsolation: true, sandbox: true }
     })
     await window.loadFile(htmlPath)
