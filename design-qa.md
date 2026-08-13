@@ -1,6 +1,6 @@
 # Design QA
 
-- Source visual truth: `C:/Users/ZYuLi/AppData/Local/Temp/codex-clipboard-ea5e2ee9-db35-4a82-bfe5-76823d96ed12.png`
+- Source visual truth: `C:/Users/ZYuLi/AppData/Local/Temp/codex-clipboard-7e23dfe6-4905-47ab-8203-8ffdae9d5b7d.png`
 - Implementation target: `http://127.0.0.1:17653/editor/`
 - Source pixels: 2374 × 1586 at 96 DPI
 - Intended viewport/state: desktop editor, a text element selected, element properties visible
@@ -14,20 +14,20 @@ The source screenshot was opened and inspected. The local editor HTML, CSS, and 
 
 ## Focused region comparison evidence
 
-The requested focused region is the pair of floating canvas toolbars. Source intent is clear: the element-position toolbar sits at the left edge and the text-alignment toolbar sits at the right edge on the same top row. Code inspection confirms these opposing anchors exist, but rendered evidence is unavailable.
+The requested focused region is the default geometry of newly added elements on small paper sizes. Source evidence shows a new text element on 20 × 10 mm paper receiving `10, 10 · 1 × 10 mm`, placing it at and below the paper's bottom edge. Code inspection confirms new text and images now derive centered geometry from the oriented paper's available area, but rendered evidence is unavailable.
 
 ## Findings
 
 - [P2] Rendered layout not visually verified
-  - Location: editor text properties and canvas toolbars.
+  - Location: newly added text and image elements on small paper sizes.
   - Evidence: source image is available; implementation screenshot is unavailable.
-  - Impact: overlap, spacing, and responsive placement cannot be confirmed visually.
-  - Fix: refresh the editor after the browser connection is restored, capture the same selected-text state, and compare the toolbar and inspector regions.
+  - Impact: final element visibility and inspector values cannot be confirmed visually.
+  - Fix: refresh the editor after the browser connection is restored, use 20 × 10 mm paper, add text and an image, and confirm both appear fully inside the paper.
 
 ## Required fidelity surfaces
 
-- Fonts and typography: unchanged by this task; rendered hierarchy not visually rechecked.
-- Spacing and layout rhythm: code updated, but toolbar overlap and inspector density remain visually unverified.
+- Fonts and typography: unchanged by this task.
+- Spacing and layout rhythm: new elements use proportional safe insets and centered placement; rendered spacing remains visually unverified.
 - Colors and visual tokens: existing project tokens were reused; rendered appearance not rechecked.
 - Image quality and asset fidelity: no new image assets were introduced.
 - Copy and content: icon controls expose accessible labels for horizontal and vertical alignment; `位置与尺寸` remains visible in the inspector.
@@ -40,6 +40,11 @@ The requested focused region is the pair of floating canvas toolbars. Source int
 - Static code path confirms position and size controls are always created in the DOM.
 - Static markup confirms all six text-alignment buttons reuse the same SVG paths and shared stroke styling as the position toolbar, without a separately loaded icon font.
 - Static CSS confirms the element-position toolbar uses a 58 px left anchor and the text-alignment toolbar uses a 58 px right anchor; below 1120 px viewport width the right toolbar moves down to avoid overlap.
+- Static code confirms ruler zero points use the paper's rendered offsets and each tick position uses the current pixels-per-millimeter scale.
+- Static code confirms 1 mm ticks and 10 mm labels at normal scale, with reduced density for very large paper previews.
+- Static code confirms ruler DOM is cached and is not rebuilt while only dragging an element.
+- Static geometry evaluation confirms 20 × 10 mm paper produces `2, 1 · 16 × 8 mm` for both new text and images.
+- Static code confirms landscape mode uses the oriented paper dimensions instead of the unrotated page dimensions.
 - Browser interaction and console checks were blocked.
 
 ## Comparison history
@@ -49,9 +54,9 @@ The requested focused region is the pair of floating canvas toolbars. Source int
 ## Implementation checklist
 
 - Capture the updated editor at the source viewport with a text element selected.
-- Verify the right floating toolbar does not overlap the centered position toolbar.
-- Verify the font field spans the inspector width.
-- Verify position and size fields are visible without interaction.
-- Switch to an image element and confirm the text alignment toolbar disappears.
+- On 20 × 10 mm paper, add text and verify it appears centered at `2, 1 · 16 × 8 mm`.
+- On 20 × 10 mm paper, add an image and verify it appears fully inside the paper.
+- Switch orientation and verify newly added elements use the oriented dimensions.
+- Verify normal card and A-series paper still receive sensible capped default sizes.
 
 final result: blocked

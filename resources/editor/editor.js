@@ -7,6 +7,8 @@ const presets = {
   A6: { widthMm: 105, heightMm: 148 },
   'photo-6in': { widthMm: 102, heightMm: 152 }
 }
+const defaultTextAlign = 'center'
+const defaultTextVerticalAlign = 'middle'
 
 const fontFamilies = new Set(['Microsoft YaHei', 'SimSun', 'SimHei', 'Arial'])
 let availableSystemFontCount = 0
@@ -30,8 +32,8 @@ const state = {
       fontFamily: 'Microsoft YaHei',
       fontWeight: 700,
       color: '#24211c',
-      align: 'left',
-      verticalAlign: 'top',
+      align: defaultTextAlign,
+      verticalAlign: defaultTextVerticalAlign,
       lineHeight: 1.2,
       rotate: 0
     },
@@ -47,8 +49,8 @@ const state = {
       fontFamily: 'Microsoft YaHei',
       fontWeight: 400,
       color: '#ff6248',
-      align: 'left',
-      verticalAlign: 'top',
+      align: defaultTextAlign,
+      verticalAlign: defaultTextVerticalAlign,
       lineHeight: 1.2,
       rotate: 0
     }
@@ -64,6 +66,8 @@ const byId = (id) => {
 
 const paper = byId('paper')
 const stage = byId('stage')
+const rulerX = byId('rulerX')
+const rulerY = byId('rulerY')
 const paperMeta = byId('paperMeta')
 const paperSummary = byId('paperSummary')
 const paperControl = byId('paperControl')
@@ -87,6 +91,7 @@ const useDefaultPageSize = byId('useDefaultPageSize')
 const imageInput = byId('imageInput')
 const message = byId('message')
 let canvasScale = 1
+let rulerRenderKey = ''
 let paperPopoverCloseTimer
 const loadedRemoteFonts = new Map()
 
@@ -674,6 +679,56 @@ function startDrag(event, item) {
   window.addEventListener('pointerup', end, { once: true })
 }
 
+function rulerDensity(scale) {
+  if (scale >= 4) return { tickStepMm: 1, labelStepMm: 10 }
+  if (scale >= 2) return { tickStepMm: 2, labelStepMm: 20 }
+  return { tickStepMm: 5, labelStepMm: 50 }
+}
+
+function renderRulerAxis(ruler, lengthMm, originPx, axis) {
+  const { tickStepMm, labelStepMm } = rulerDensity(canvasScale)
+  const fragment = document.createDocumentFragment()
+  const tickCount = Math.floor(lengthMm / tickStepMm)
+
+  for (let index = 0; index <= tickCount; index += 1) {
+    const mm = index * tickStepMm
+    const position = originPx + mm * canvasScale
+    const tick = document.createElement('span')
+    tick.className = `ruler-tick${mm % 10 === 0 ? ' is-major' : mm % 5 === 0 ? ' is-medium' : ''}`
+    tick.style[axis] = `${position}px`
+    fragment.append(tick)
+
+    if (mm % labelStepMm === 0) {
+      const label = document.createElement('span')
+      label.className = 'ruler-label'
+      label.textContent = String(mm)
+      label.style[axis] = `${position}px`
+      fragment.append(label)
+    }
+  }
+
+  ruler.replaceChildren(fragment)
+}
+
+function renderRulers(size) {
+  const xOrigin = paper.offsetLeft - rulerX.offsetLeft
+  const yOrigin = paper.offsetTop - rulerY.offsetTop
+  const renderKey = [
+    size.widthMm,
+    size.heightMm,
+    canvasScale.toFixed(4),
+    xOrigin.toFixed(2),
+    yOrigin.toFixed(2),
+    rulerX.clientWidth,
+    rulerY.clientHeight
+  ].join(':')
+  if (renderKey === rulerRenderKey) return
+
+  rulerRenderKey = renderKey
+  renderRulerAxis(rulerX, size.widthMm, xOrigin, 'left')
+  renderRulerAxis(rulerY, size.heightMm, yOrigin, 'top')
+}
+
 function renderCanvas() {
   const size = orientedPage()
   const selected = selectedItem()
@@ -681,12 +736,15 @@ function renderCanvas() {
   textAlignToolbar.hidden = selected?.type !== 'text'
   if (selected?.type === 'text') {
     textAlignButtons.forEach((button) => {
-      button.classList.toggle('is-active', button.dataset.textAlign === (selected.align || 'left'))
+      button.classList.toggle(
+        'is-active',
+        button.dataset.textAlign === (selected.align || defaultTextAlign)
+      )
     })
     verticalAlignButtons.forEach((button) => {
       button.classList.toggle(
         'is-active',
-        button.dataset.verticalAlign === (selected.verticalAlign || 'top')
+        button.dataset.verticalAlign === (selected.verticalAlign || defaultTextVerticalAlign)
       )
     })
   }
@@ -695,6 +753,7 @@ function renderCanvas() {
   canvasScale = Math.min(maxWidth / size.widthMm, maxHeight / size.heightMm)
   paper.style.width = `${size.widthMm * canvasScale}px`
   paper.style.height = `${size.heightMm * canvasScale}px`
+  renderRulers(size)
   paper.replaceChildren()
 
   state.items.forEach((item) => {
@@ -712,13 +771,14 @@ function renderCanvas() {
       visual.style.fontWeight = String(item.fontWeight || 400)
       visual.style.lineHeight = String(item.lineHeight || 1.2)
       visual.style.color = item.color || '#000000'
-      visual.style.textAlign = item.align || 'left'
+      visual.style.textAlign = item.align || defaultTextAlign
       visual.style.display = 'flex'
       visual.style.flexDirection = 'column'
+      const verticalAlign = item.verticalAlign || defaultTextVerticalAlign
       visual.style.justifyContent =
-        item.verticalAlign === 'middle'
+        verticalAlign === 'middle'
           ? 'center'
-          : item.verticalAlign === 'bottom'
+          : verticalAlign === 'bottom'
             ? 'flex-end'
             : 'flex-start'
       visual.style.whiteSpace = 'pre-wrap'
@@ -751,21 +811,35 @@ function render(withProperties = false) {
   if (withProperties) renderProperties()
 }
 
+function centeredDefaultGeometry(maxWidthMm, maxHeightMm) {
+  const size = orientedPage()
+  const insetX = Math.min(10, size.widthMm * 0.1)
+  const insetY = Math.min(10, size.heightMm * 0.1)
+  const widthMm =
+    Math.round(Math.max(0.1, Math.min(maxWidthMm, size.widthMm - insetX * 2)) * 10) / 10
+  const heightMm =
+    Math.round(Math.max(0.1, Math.min(maxHeightMm, size.heightMm - insetY * 2)) * 10) / 10
+  return {
+    xMm: Math.round(Math.max(0, (size.widthMm - widthMm) / 2) * 10) / 10,
+    yMm: Math.round(Math.max(0, (size.heightMm - heightMm) / 2) * 10) / 10,
+    widthMm,
+    heightMm
+  }
+}
+
 function addText() {
+  const geometry = centeredDefaultGeometry(60, 10)
   const item = {
     id: crypto.randomUUID(),
     type: 'text',
     content: '新文字',
-    xMm: 10,
-    yMm: 10,
-    widthMm: Math.max(1, Math.min(60, state.page.widthMm - 20)),
-    heightMm: 10,
+    ...geometry,
     fontSizePt: 12,
     fontFamily: 'Microsoft YaHei',
     fontWeight: 400,
     color: '#24211c',
-    align: 'left',
-    verticalAlign: 'top',
+    align: defaultTextAlign,
+    verticalAlign: defaultTextVerticalAlign,
     lineHeight: 1.2,
     rotate: 0
   }
@@ -813,15 +887,13 @@ async function addImage(file) {
     reader.onerror = () => reject(new Error('图片读取失败。'))
     reader.readAsDataURL(file)
   })
+  const geometry = centeredDefaultGeometry(40, 30)
   const item = {
     id: crypto.randomUUID(),
     type: 'image',
     name: file.name,
     src,
-    xMm: 10,
-    yMm: 10,
-    widthMm: Math.max(1, Math.min(40, state.page.widthMm - 20)),
-    heightMm: Math.max(1, Math.min(30, state.page.heightMm - 20)),
+    ...geometry,
     fit: 'contain',
     rotate: 0
   }

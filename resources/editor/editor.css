@@ -728,6 +728,7 @@ h1 {
 }
 
 .stage {
+  --ruler-size: 28px;
   position: relative;
   display: grid;
   min-width: 0;
@@ -840,21 +841,93 @@ h1 {
 }
 .ruler {
   position: absolute;
-  background-color: rgba(221, 216, 207, 0.92);
+  z-index: 3;
+  overflow: hidden;
+  border-color: rgba(139, 130, 117, 0.38);
+  background: rgba(230, 226, 218, 0.94);
+  color: #766e63;
+  pointer-events: none;
+  user-select: none;
 }
 .ruler-x {
   top: 0;
   right: 0;
-  left: 36px;
-  height: 27px;
-  background-image: repeating-linear-gradient(90deg, transparent 0 19px, #988f82 19px 20px);
+  left: var(--ruler-size);
+  height: var(--ruler-size);
+  border-bottom-style: solid;
+  border-bottom-width: 1px;
 }
 .ruler-y {
-  top: 27px;
+  top: var(--ruler-size);
   bottom: 0;
   left: 0;
-  width: 36px;
-  background-image: repeating-linear-gradient(0deg, transparent 0 19px, #988f82 19px 20px);
+  width: var(--ruler-size);
+  border-right-style: solid;
+  border-right-width: 1px;
+}
+.ruler-corner {
+  position: absolute;
+  z-index: 4;
+  top: 0;
+  left: 0;
+  display: grid;
+  width: var(--ruler-size);
+  height: var(--ruler-size);
+  border-right: 1px solid rgba(139, 130, 117, 0.38);
+  border-bottom: 1px solid rgba(139, 130, 117, 0.38);
+  background: rgba(219, 214, 205, 0.98);
+  color: #766e63;
+  font-family: Consolas, monospace;
+  font-size: 8px;
+  place-items: center;
+  pointer-events: none;
+  user-select: none;
+}
+.ruler-tick,
+.ruler-label {
+  position: absolute;
+}
+.ruler-tick {
+  background: rgba(112, 104, 93, 0.42);
+}
+.ruler-x .ruler-tick {
+  bottom: 0;
+  width: 1px;
+  height: 4px;
+}
+.ruler-y .ruler-tick {
+  right: 0;
+  width: 4px;
+  height: 1px;
+}
+.ruler-x .ruler-tick.is-medium {
+  height: 8px;
+}
+.ruler-y .ruler-tick.is-medium {
+  width: 8px;
+}
+.ruler-x .ruler-tick.is-major {
+  height: 13px;
+}
+.ruler-y .ruler-tick.is-major {
+  width: 13px;
+}
+.ruler-tick.is-major {
+  background: rgba(92, 84, 73, 0.72);
+}
+.ruler-label {
+  font-family: Consolas, monospace;
+  font-size: 8px;
+  line-height: 1;
+  white-space: nowrap;
+}
+.ruler-x .ruler-label {
+  top: 3px;
+  transform: translateX(3px);
+}
+.ruler-y .ruler-label {
+  left: 3px;
+  transform: translateY(3px);
 }
 .paper {
   position: relative;
