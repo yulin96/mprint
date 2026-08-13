@@ -903,9 +903,10 @@ async function addImage(file) {
 }
 
 async function runAction(button, busyText, action) {
-  const label = button.textContent
+  const labelElement = button.querySelector('.button-label') || button
+  const label = labelElement.textContent
   button.disabled = true
-  button.textContent = busyText
+  labelElement.textContent = busyText
   setMessage('')
   try {
     await action()
@@ -913,7 +914,7 @@ async function runAction(button, busyText, action) {
     setMessage(error instanceof Error ? error.message : String(error), true)
   } finally {
     button.disabled = false
-    button.textContent = label
+    labelElement.textContent = label
   }
 }
 
@@ -1046,14 +1047,15 @@ byId('deleteElement').addEventListener('click', () => {
 })
 byId('copyButton').addEventListener('click', async (event) => {
   const button = event.currentTarget
+  const label = button.querySelector('.button-label')
   try {
     await navigator.clipboard.writeText(
       `await MPrint.print(${JSON.stringify(requestPayload(), null, 2)})`
     )
     setMessage('当前模板调用代码已复制。')
-    button.textContent = '已复制'
+    label.textContent = '已复制'
     window.setTimeout(() => {
-      button.textContent = '复制当前代码'
+      label.textContent = '复制当前代码'
     }, 1500)
   } catch (error) {
     setMessage(error instanceof Error ? error.message : String(error), true)

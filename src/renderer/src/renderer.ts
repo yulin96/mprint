@@ -25,10 +25,17 @@ function errorMessage(error: unknown): string {
   return error instanceof Error ? error.message : String(error)
 }
 
+function buttonLabel(button: HTMLButtonElement): HTMLElement {
+  const label = button.querySelector<HTMLElement>('.button-label')
+  if (!label) throw new Error(`按钮缺少标签：${button.id}`)
+  return label
+}
+
 function setBusy(button: HTMLButtonElement, busy: boolean, busyText: string): void {
-  if (!button.dataset.label) button.dataset.label = button.textContent ?? ''
+  const label = buttonLabel(button)
+  if (!label.dataset.label) label.dataset.label = label.textContent ?? ''
   button.disabled = busy
-  button.textContent = busy ? busyText : button.dataset.label
+  label.textContent = busy ? busyText : label.dataset.label
 }
 
 function applyStatus(status: ServiceStatus): void {
@@ -126,8 +133,9 @@ function bindEvents(): void {
   element<HTMLButtonElement>('copyCodeButton').addEventListener('click', async () => {
     await navigator.clipboard.writeText(sdkCode.textContent ?? '')
     const button = element<HTMLButtonElement>('copyCodeButton')
-    button.textContent = '已复制'
-    window.setTimeout(() => (button.textContent = '复制代码'), 1200)
+    const label = buttonLabel(button)
+    label.textContent = '已复制'
+    window.setTimeout(() => (label.textContent = '复制代码'), 1200)
   })
   element<HTMLButtonElement>('openEditorButton').addEventListener('click', async () => {
     const button = element<HTMLButtonElement>('openEditorButton')

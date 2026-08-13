@@ -13,11 +13,12 @@
       <header class="topbar">
         <div class="brand-block">
           <div class="brand-mark" aria-hidden="true">
-            <svg width="25" height="25" viewBox="0 0 32 32">
+            <svg width="25" height="25" viewBox="0 0 24 24">
               <path
-                d="M9 11V5h14v6M9 23H6a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h20a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-3"
+                d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"
               />
-              <path d="M9 19h14v8H9zM23 15h.01" />
+              <path d="M6 9V3a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v6" />
+              <rect x="6" y="14" width="12" height="8" rx="1" />
             </svg>
           </div>
           <div>
@@ -56,8 +57,15 @@
                 <strong>打开模板编辑器</strong>
                 <small id="editorAddress">http://127.0.0.1:17653/editor/</small>
               </span>
-              <svg class="launch-icon" viewBox="0 0 20 20" aria-hidden="true">
-                <path d="M7 5h8v8M15 5 5 15" />
+              <svg
+                class="launch-icon"
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                aria-hidden="true"
+              >
+                <path d="M7 7h10v10" />
+                <path d="M7 17 17 7" />
               </svg>
             </button>
           </div>
@@ -85,7 +93,16 @@
             </label>
             <div class="form-actions">
               <span id="settingsMessage" class="inline-message" role="status"></span>
-              <button id="saveSettingsButton" class="primary-button" type="submit">保存设置</button>
+              <button id="saveSettingsButton" class="primary-button" type="submit">
+                <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true">
+                  <path
+                    d="M15.2 3a2 2 0 0 1 1.4.6l3.8 3.8a2 2 0 0 1 .6 1.4V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"
+                  />
+                  <path d="M17 21v-7a1 1 0 0 0-1-1H8a1 1 0 0 0-1 1v7" />
+                  <path d="M7 3v4a1 1 0 0 0 1 1h7" />
+                </svg>
+                <span class="button-label">保存设置</span>
+              </button>
             </div>
           </form>
         </section>
@@ -97,7 +114,13 @@
               <p>调用时请使用系统名称 <code>name</code>。</p>
             </div>
             <button id="refreshPrintersButton" class="secondary-button" type="button">
-              刷新列表
+              <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" />
+                <path d="M21 3v5h-5" />
+                <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" />
+                <path d="M8 16H3v5" />
+              </svg>
+              <span class="button-label">刷新列表</span>
             </button>
           </div>
           <div id="printerList" class="printer-list" aria-live="polite">
@@ -111,7 +134,13 @@
               <h2>网页直接调用</h2>
               <p>引入一次 SDK，业务代码直接调用一个 API。</p>
             </div>
-            <button id="copyCodeButton" class="secondary-button" type="button">复制代码</button>
+            <button id="copyCodeButton" class="secondary-button" type="button">
+              <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true">
+                <rect width="14" height="14" x="8" y="8" rx="2" ry="2" />
+                <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" />
+              </svg>
+              <span class="button-label">复制代码</span>
+            </button>
           </div>
           <pre
             id="sdkCode"

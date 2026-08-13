@@ -62,6 +62,7 @@
 
 .brand-mark svg {
   width: 25px;
+  height: 25px;
   fill: none;
   stroke: currentColor;
   stroke-linecap: round;
@@ -261,6 +262,7 @@ p {
 .launch-icon {
   flex: 0 0 auto;
   width: 20px;
+  height: 20px;
   fill: none;
   stroke: currentColor;
   stroke-linecap: round;
@@ -350,12 +352,28 @@ p {
 
 .primary-button,
 .secondary-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
   min-height: 38px;
   padding: 0 16px;
   border-radius: 10px;
   cursor: pointer;
   font-size: 13px;
   font-weight: 700;
+}
+
+.primary-button svg,
+.secondary-button svg {
+  flex: 0 0 auto;
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 2;
 }
 
 .primary-button {

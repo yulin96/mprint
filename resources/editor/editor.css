@@ -137,6 +137,7 @@ textarea:focus-visible {
 }
 .brand-mark svg {
   width: 24px;
+  height: 24px;
   fill: none;
   stroke: currentColor;
   stroke-width: 1.7;
@@ -321,12 +322,31 @@ h1 {
   color: var(--danger);
 }
 .button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
   min-height: 38px;
   padding: 0 15px;
   border-radius: 10px;
   cursor: pointer;
   font-size: 13px;
   font-weight: 700;
+}
+
+.button svg,
+.delete-button svg {
+  flex: 0 0 auto;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 2;
+}
+
+.button svg {
+  width: 16px;
+  height: 16px;
 }
 .button:disabled {
   cursor: wait;
@@ -638,6 +658,7 @@ h1 {
 }
 .add-actions svg {
   width: 15px;
+  height: 15px;
   fill: none;
   stroke: currentColor;
   stroke-linecap: round;
@@ -649,12 +670,20 @@ h1 {
   color: var(--coral-dark);
 }
 .delete-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
   border: 0;
   background: transparent;
   color: var(--danger);
   cursor: pointer;
   font-size: 11px;
   font-weight: 700;
+}
+
+.delete-button svg {
+  width: 14px;
+  height: 14px;
 }
 .element-list {
   display: grid;
