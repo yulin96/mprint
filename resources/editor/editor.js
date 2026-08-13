@@ -107,9 +107,19 @@ const message = byId('message')
 const draftStatus = byId('draftStatus')
 const templateName = byId('templateName')
 const templateList = byId('templateList')
+const templateCount = byId('templateCount')
+const templateControl = byId('templateControl')
+const templateListButton = byId('templateListButton')
+const templatePopover = byId('templatePopover')
+const templateSaveBackdrop = byId('templateSaveBackdrop')
+const templateSaveDialog = byId('templateSaveDialog')
+const templateSaveTitle = byId('templateSaveTitle')
+const templateSaveHint = byId('templateSaveHint')
 let canvasScale = 1
 let rulerRenderKey = ''
 let paperPopoverCloseTimer
+let templatePopoverCloseTimer
+let templateModalCloseTimer
 let draftSaveTimer
 let editorReady = false
 let activeTemplateId = null
@@ -1010,8 +1020,70 @@ async function runAction(button, busyText, action) {
   }
 }
 
+function transitionDuration(variable, fallback) {
+  return (
+    parseFloat(getComputedStyle(document.documentElement).getPropertyValue(variable)) || fallback
+  )
+}
+
+function setTemplatePopover(open) {
+  if (!open && !templatePopover.classList.contains('is-open')) return
+  window.clearTimeout(templatePopoverCloseTimer)
+  templateListButton.setAttribute('aria-expanded', String(open))
+  templatePopover.setAttribute('aria-hidden', String(!open))
+  templatePopover.inert = !open
+  if (open) {
+    setPaperPopover(false)
+    templatePopover.classList.remove('is-closing')
+    templatePopover.classList.add('is-open')
+    return
+  }
+  templatePopover.classList.remove('is-open')
+  templatePopover.classList.add('is-closing')
+  templatePopoverCloseTimer = window.setTimeout(
+    () => templatePopover.classList.remove('is-closing'),
+    transitionDuration('--dropdown-close-dur', 150)
+  )
+}
+
+function setTemplateSaveDialog(open) {
+  if (!open && !templateSaveBackdrop.classList.contains('is-open')) return
+  window.clearTimeout(templateModalCloseTimer)
+  templateSaveBackdrop.setAttribute('aria-hidden', String(!open))
+  templateSaveBackdrop.inert = !open
+  if (open) {
+    setTemplatePopover(false)
+    setPaperPopover(false)
+    templateSaveTitle.textContent = activeTemplateId ? '保存模板' : '保存为模板'
+    templateSaveHint.textContent = activeTemplateId
+      ? '保存后会为当前模板生成一个新历史版本。'
+      : '创建一个可以重复加载的命名模板。'
+    templateSaveBackdrop.classList.remove('is-closing')
+    templateSaveDialog.classList.remove('is-closing')
+    templateSaveBackdrop.classList.add('is-open')
+    templateSaveDialog.classList.add('is-open')
+    window.setTimeout(() => {
+      templateName.focus()
+      templateName.select()
+    })
+    return
+  }
+  templateSaveBackdrop.classList.remove('is-open')
+  templateSaveDialog.classList.remove('is-open')
+  templateSaveBackdrop.classList.add('is-closing')
+  templateSaveDialog.classList.add('is-closing')
+  templateModalCloseTimer = window.setTimeout(
+    () => {
+      templateSaveBackdrop.classList.remove('is-closing')
+      templateSaveDialog.classList.remove('is-closing')
+    },
+    transitionDuration('--modal-close-dur', 150)
+  )
+}
+
 function renderTemplates() {
   templateList.replaceChildren()
+  templateCount.textContent = String(templates.length)
   if (!templates.length) {
     const empty = document.createElement('div')
     empty.className = 'template-empty'
@@ -1035,6 +1107,7 @@ function renderTemplates() {
       templateName.value = template.name
       applyTemplate(template.data)
       renderTemplates()
+      setTemplatePopover(false)
       setMessage(`已加载模板：${template.name}`)
     })
     const actions = document.createElement('div')
@@ -1058,6 +1131,7 @@ function renderTemplates() {
       templateName.value = template.name
       applyTemplate(version.data)
       renderTemplates()
+      setTemplatePopover(false)
       setMessage(`已加载“${template.name}”的历史版本，保存后会生成新版本。`)
     })
     const remove = document.createElement('button')
@@ -1069,7 +1143,10 @@ function renderTemplates() {
       try {
         await postEditor('/v1/templates/delete', { id: template.id })
         templates = templates.filter((item) => item.id !== template.id)
-        if (activeTemplateId === template.id) activeTemplateId = null
+        if (activeTemplateId === template.id) {
+          activeTemplateId = null
+          templateName.value = ''
+        }
         renderTemplates()
         setMessage(`已删除模板：${template.name}`)
       } catch (error) {
@@ -1098,6 +1175,7 @@ async function initializeTemplates() {
   } catch (error) {
     renderRemoteFonts()
     render(true)
+    renderTemplates()
     draftStatus.textContent = '记录读取失败'
     setMessage(error instanceof Error ? error.message : String(error), true)
   } finally {
@@ -1120,15 +1198,15 @@ function setPaperPopover(open) {
   }
   paperPopover.classList.remove('is-open')
   paperPopover.classList.add('is-closing')
-  const closeMs =
-    parseFloat(
-      getComputedStyle(document.documentElement).getPropertyValue('--dropdown-close-dur')
-    ) || 150
-  paperPopoverCloseTimer = window.setTimeout(() => {
-    paperPopover.classList.remove('is-closing')
-  }, closeMs)
+  paperPopoverCloseTimer = window.setTimeout(
+    () => {
+      paperPopover.classList.remove('is-closing')
+    },
+    transitionDuration('--dropdown-close-dur', 150)
+  )
 }
 paperSettingsButton.addEventListener('click', () => {
+  setTemplatePopover(false)
   setPaperPopover(!paperPopover.classList.contains('is-open'))
 })
 byId('closePaperPopover').addEventListener('click', () => {
@@ -1137,12 +1215,41 @@ byId('closePaperPopover').addEventListener('click', () => {
 })
 document.addEventListener('click', (event) => {
   if (!paperControl.contains(event.target)) setPaperPopover(false)
+  if (!templateControl.contains(event.target)) setTemplatePopover(false)
 })
 document.addEventListener('keydown', (event) => {
-  if (event.key === 'Escape' && paperPopover.classList.contains('is-open')) {
+  if (event.key !== 'Escape') return
+  if (templateSaveBackdrop.classList.contains('is-open')) {
+    setTemplateSaveDialog(false)
+    byId('openSaveTemplate').focus()
+  } else if (templatePopover.classList.contains('is-open')) {
+    setTemplatePopover(false)
+    templateListButton.focus()
+  } else if (paperPopover.classList.contains('is-open')) {
     setPaperPopover(false)
     paperSettingsButton.focus()
   }
+})
+templateListButton.addEventListener('click', () => {
+  setTemplatePopover(!templatePopover.classList.contains('is-open'))
+})
+byId('closeTemplatePopover').addEventListener('click', () => {
+  setTemplatePopover(false)
+  templateListButton.focus()
+})
+byId('openSaveTemplate').addEventListener('click', () => setTemplateSaveDialog(true))
+byId('closeTemplateSave').addEventListener('click', () => {
+  setTemplateSaveDialog(false)
+  byId('openSaveTemplate').focus()
+})
+byId('cancelSaveTemplate').addEventListener('click', () => {
+  setTemplateSaveDialog(false)
+  byId('openSaveTemplate').focus()
+})
+templateSaveBackdrop.addEventListener('click', (event) => {
+  if (event.target !== templateSaveBackdrop) return
+  setTemplateSaveDialog(false)
+  byId('openSaveTemplate').focus()
 })
 pagePreset.addEventListener('change', () => {
   const preset = presets[pagePreset.value]
@@ -1192,6 +1299,7 @@ byId('newTemplate').addEventListener('click', () => {
   templateName.value = ''
   applyTemplate(createDefaultState())
   renderTemplates()
+  setTemplatePopover(false)
   setMessage('已新建默认草稿。')
 })
 byId('saveTemplate').addEventListener('click', (event) =>
@@ -1206,9 +1314,15 @@ byId('saveTemplate').addEventListener('click', (event) =>
     activeTemplateId = record.id
     templates = [record, ...templates.filter((item) => item.id !== record.id)]
     renderTemplates()
+    setTemplateSaveDialog(false)
     setMessage(`模板“${record.name}”已保存。`)
   })
 )
+templateName.addEventListener('keydown', (event) => {
+  if (event.key !== 'Enter') return
+  event.preventDefault()
+  byId('saveTemplate').click()
+})
 byId('addRemoteFont').addEventListener('click', () => {
   if (state.fonts.length >= 10) {
     setMessage('远程字体最多添加 10 个。', true)

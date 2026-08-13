@@ -114,6 +114,68 @@
             <input id="useDefaultPageSize" type="checkbox" />
             <span>打印机默认纸张</span>
           </label>
+          <div id="templateControl" class="template-control">
+            <button
+              id="templateListButton"
+              class="button button-secondary template-list-button"
+              type="button"
+              aria-expanded="false"
+              aria-controls="templatePopover"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M8 6h13" />
+                <path d="M8 12h13" />
+                <path d="M8 18h13" />
+                <path d="M3 6h.01" />
+                <path d="M3 12h.01" />
+                <path d="M3 18h.01" />
+              </svg>
+              <span class="template-button-label">模板列表</span>
+              <span id="templateCount" class="template-count">0</span>
+            </button>
+            <section
+              id="templatePopover"
+              class="template-popover t-dropdown"
+              data-origin="top-left"
+              aria-hidden="true"
+              inert
+            >
+              <div class="popover-heading template-popover-heading">
+                <div>
+                  <h2>模板列表</h2>
+                  <p id="draftStatus">正在读取草稿</p>
+                </div>
+                <button
+                  id="closeTemplatePopover"
+                  class="popover-close"
+                  type="button"
+                  aria-label="关闭模板列表"
+                >
+                  <svg viewBox="0 0 20 20" aria-hidden="true">
+                    <path d="m5 5 10 10M15 5 5 15" />
+                  </svg>
+                </button>
+              </div>
+              <button id="newTemplate" class="template-new-button" type="button">
+                新建默认草稿
+              </button>
+              <div id="templateList" class="template-list"></div>
+            </section>
+          </div>
+          <button
+            id="openSaveTemplate"
+            class="button button-secondary template-save-button"
+            type="button"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true">
+              <path
+                d="M15.2 3a2 2 0 0 1 1.4.6l3.8 3.8a2 2 0 0 1 .6 1.4V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"
+              />
+              <path d="M17 21v-7a1 1 0 0 0-1-1H8a1 1 0 0 0-1 1v7" />
+              <path d="M7 3v4a1 1 0 0 0 1 1h7" />
+            </svg>
+            <span class="button-label">保存为模板</span>
+          </button>
         </div>
         <div class="topbar-actions">
           <span id="message" class="message" role="status"></span>
@@ -152,23 +214,6 @@
 
       <section class="workspace">
         <aside class="inspector">
-          <section class="panel-section templates-section">
-            <div class="section-heading">
-              <div>
-                <h2>模板记录</h2>
-                <span id="draftStatus">正在读取草稿</span>
-              </div>
-              <button id="newTemplate" class="section-action section-action-muted" type="button">
-                新建
-              </button>
-            </div>
-            <div class="template-save-row">
-              <input id="templateName" type="text" maxlength="80" placeholder="输入模板名称" />
-              <button id="saveTemplate" class="section-action" type="button">保存模板</button>
-            </div>
-            <div id="templateList" class="template-list"></div>
-          </section>
-
           <section class="panel-section">
             <div class="section-heading">
               <h2>元素</h2>
@@ -388,6 +433,42 @@
         </section>
       </section>
     </main>
+    <div id="templateSaveBackdrop" class="template-modal-backdrop" aria-hidden="true" inert>
+      <section
+        id="templateSaveDialog"
+        class="template-save-dialog t-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="templateSaveTitle"
+      >
+        <div class="template-save-heading">
+          <div>
+            <h2 id="templateSaveTitle">保存为模板</h2>
+            <p id="templateSaveHint">创建一个可以重复加载的命名模板。</p>
+          </div>
+          <button
+            id="closeTemplateSave"
+            class="popover-close"
+            type="button"
+            aria-label="关闭保存模板对话框"
+          >
+            <svg viewBox="0 0 20 20" aria-hidden="true">
+              <path d="m5 5 10 10M15 5 5 15" />
+            </svg>
+          </button>
+        </div>
+        <label class="template-name-field">
+          <span>模板名称</span>
+          <input id="templateName" type="text" maxlength="80" placeholder="例如：签到标签 8 × 3" />
+        </label>
+        <div class="template-save-actions">
+          <button id="cancelSaveTemplate" class="button button-secondary" type="button">
+            取消
+          </button>
+          <button id="saveTemplate" class="button button-primary" type="button">保存模板</button>
+        </div>
+      </section>
+    </div>
     <script src="/mprint.js"></script>
     <script type="module" src="/editor/editor.js"></script>
   </body>
