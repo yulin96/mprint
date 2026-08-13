@@ -24,13 +24,8 @@ const defaultTextVerticalAlign = 'middle'
 const fontFamilies = new Set(['Microsoft YaHei', 'SimSun', 'SimHei', 'Arial'])
 let availableSystemFontCount = 0
 
-const state = {
-  page: { ...presets['label-80x30'] },
-  landscape: false,
-  useDefaultPageSize: false,
-  fonts: [],
-  selectedId: null,
-  items: [
+function createDefaultState() {
+  const items = [
     {
       id: crypto.randomUUID(),
       type: 'text',
@@ -66,8 +61,17 @@ const state = {
       rotate: 0
     }
   ]
+  return {
+    page: { ...presets['label-80x30'] },
+    landscape: false,
+    useDefaultPageSize: false,
+    fonts: [],
+    selectedId: items[0].id,
+    items
+  }
 }
-state.selectedId = state.items[0].id
+
+const state = createDefaultState()
 
 const byId = (id) => {
   const value = document.getElementById(id)
@@ -99,12 +103,34 @@ const pageWidth = byId('pageWidth')
 const pageHeight = byId('pageHeight')
 const landscape = byId('landscape')
 const useDefaultPageSize = byId('useDefaultPageSize')
-const imageInput = byId('imageInput')
 const message = byId('message')
+const draftStatus = byId('draftStatus')
+const templateName = byId('templateName')
+const templateList = byId('templateList')
 let canvasScale = 1
 let rulerRenderKey = ''
 let paperPopoverCloseTimer
+let draftSaveTimer
+let editorReady = false
+let activeTemplateId = null
+let templates = []
 const loadedRemoteFonts = new Map()
+window.MPrint.configure({ baseUrl: window.location.origin })
+
+async function editorRequest(path, options) {
+  const response = await fetch(path, options)
+  const data = await response.json()
+  if (!response.ok) throw new Error(data.error || '模板记录请求失败。')
+  return data
+}
+
+function postEditor(path, data) {
+  return editorRequest(path, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data)
+  })
+}
 
 function selectedItem() {
   return state.items.find((item) => item.id === state.selectedId)
@@ -115,7 +141,7 @@ function setMessage(text, isError = false) {
   message.className = isError ? 'message is-error' : 'message'
 }
 
-function requestPayload() {
+function requestPayload(includeImagePlaceholders = false) {
   const fonts = validatedRemoteFonts()
   return {
     page: { ...state.page },
@@ -142,20 +168,83 @@ function requestPayload() {
     images: state.items
       .filter((item) => item.type === 'image')
       .map((item) => ({
-        src: item.src,
+        src: includeImagePlaceholders ? '请替换为 PNG、JPEG 或 WebP Data URL' : '',
         xMm: item.xMm,
         yMm: item.yMm,
         widthMm: item.widthMm,
         heightMm: item.heightMm,
         fit: item.fit,
         rotate: item.rotate
-      })),
+      }))
+      .filter((item) => item.src),
     printer: {
       silent: true,
       copies: 1,
       useDefaultPageSize: state.useDefaultPageSize
     }
   }
+}
+
+function templatePayload() {
+  return {
+    version: 1,
+    page: { ...state.page },
+    landscape: state.landscape,
+    useDefaultPageSize: state.useDefaultPageSize,
+    fonts: state.fonts.map((font) => ({ ...font })),
+    items: state.items.map((item) => ({ ...item }))
+  }
+}
+
+function applyTemplate(data) {
+  const next = data && typeof data === 'object' ? data : createDefaultState()
+  state.page = { ...next.page }
+  state.landscape = next.landscape === true
+  state.useDefaultPageSize = next.useDefaultPageSize === true
+  state.fonts = Array.isArray(next.fonts) ? next.fonts.map((font) => ({ ...font })) : []
+  state.items = Array.isArray(next.items)
+    ? next.items.map((item) => ({ ...item, id: item.id || crypto.randomUUID() }))
+    : []
+  state.selectedId = state.items[0]?.id || null
+  pageWidth.value = String(state.page.widthMm)
+  pageHeight.value = String(state.page.heightMm)
+  landscape.checked = state.landscape
+  useDefaultPageSize.checked = state.useDefaultPageSize
+  const preset = Object.entries(presets).find(
+    ([, size]) => size.widthMm === state.page.widthMm && size.heightMm === state.page.heightMm
+  )
+  pagePreset.value = preset?.[0] || 'custom'
+  loadedRemoteFonts.forEach((face) => document.fonts.delete(face))
+  loadedRemoteFonts.clear()
+  renderRemoteFonts()
+  render(true)
+}
+
+function scheduleDraftSave() {
+  if (!editorReady) return
+  window.clearTimeout(draftSaveTimer)
+  draftStatus.textContent = '有未保存调整'
+  draftSaveTimer = window.setTimeout(async () => {
+    draftStatus.textContent = '正在保存草稿'
+    try {
+      await postEditor('/v1/templates/draft', templatePayload())
+      draftStatus.textContent = '草稿已自动保存'
+    } catch (error) {
+      draftStatus.textContent = '草稿保存失败'
+      setMessage(error instanceof Error ? error.message : String(error), true)
+    }
+  }, 500)
+}
+
+function flushDraftOnExit() {
+  if (!editorReady) return
+  window.clearTimeout(draftSaveTimer)
+  void fetch('/v1/templates/draft', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(templatePayload()),
+    keepalive: true
+  })
 }
 
 function normalizeRemoteFont(font, index) {
@@ -332,6 +421,7 @@ function renderRemoteFonts() {
     empty.className = 'remote-font-empty'
     empty.textContent = '尚未声明远程字体'
     remoteFontList.append(empty)
+    scheduleDraftSave()
     return
   }
 
@@ -346,6 +436,7 @@ function renderRemoteFonts() {
       removeLoadedRemoteFont(font.id)
       status.textContent = '配置已更改，请重新加载'
       status.className = 'remote-font-status'
+      scheduleDraftSave()
     }
     const family = remoteFontControl(
       '字体名称',
@@ -452,6 +543,7 @@ function renderRemoteFonts() {
     card.append(family.wrapper, url.wrapper, weight.wrapper, format.wrapper, footer)
     remoteFontList.append(card)
   })
+  scheduleDraftSave()
 }
 
 function updateSelected(key, value) {
@@ -460,6 +552,7 @@ function updateSelected(key, value) {
   item[key] = value
   renderList()
   renderCanvas()
+  scheduleDraftSave()
 }
 
 function fillFontOptions(datalist) {
@@ -601,13 +694,9 @@ function renderProperties() {
     )
   } else {
     propertyForm.append(
-      control('填充方式', item.fit || 'fill', (value) => updateSelected('fit', value), {
+      control('占位名称', item.name || '图片占位', (value) => updateSelected('name', value), {
         wide: true,
-        choices: [
-          ['fill', '拉伸填充'],
-          ['contain', '完整显示'],
-          ['cover', '裁切铺满']
-        ]
+        type: 'text'
       })
     )
   }
@@ -770,10 +859,9 @@ function renderCanvas() {
   state.items.forEach((item) => {
     let visual
     if (item.type === 'image') {
-      visual = document.createElement('img')
-      visual.src = item.src
-      visual.alt = item.name
-      visual.style.objectFit = ['contain', 'cover'].includes(item.fit) ? item.fit : 'fill'
+      visual = document.createElement('div')
+      visual.className = 'image-placeholder'
+      visual.textContent = item.name || '图片占位'
     } else {
       visual = document.createElement('div')
       visual.textContent = item.content
@@ -795,7 +883,8 @@ function renderCanvas() {
       visual.style.whiteSpace = 'pre-wrap'
       visual.style.overflowWrap = 'anywhere'
     }
-    visual.className = `preview-item${item.id === state.selectedId ? ' is-selected' : ''}`
+    visual.classList.add('preview-item')
+    visual.classList.toggle('is-selected', item.id === state.selectedId)
     visual.style.left = `${item.xMm * canvasScale}px`
     visual.style.top = `${item.yMm * canvasScale}px`
     visual.style.width = `${item.widthMm * canvasScale}px`
@@ -820,6 +909,7 @@ function render(withProperties = false) {
   renderList()
   renderCanvas()
   if (withProperties) renderProperties()
+  scheduleDraftSave()
 }
 
 function centeredDefaultGeometry(maxWidthMm, maxHeightMm) {
@@ -890,22 +980,13 @@ function positionSelected(mode) {
   render(true)
 }
 
-async function addImage(file) {
-  if (file.size > 20 * 1024 * 1024) throw new Error('图片不能超过 20MB。')
-  const src = await new Promise((resolve, reject) => {
-    const reader = new FileReader()
-    reader.onload = () => resolve(String(reader.result))
-    reader.onerror = () => reject(new Error('图片读取失败。'))
-    reader.readAsDataURL(file)
-  })
+function addImagePlaceholder() {
   const geometry = centeredDefaultGeometry(40, 30)
   const item = {
     id: crypto.randomUUID(),
     type: 'image',
-    name: file.name,
-    src,
+    name: '图片占位',
     ...geometry,
-    fit: 'contain',
     rotate: 0
   }
   state.items.push(item)
@@ -926,6 +1007,101 @@ async function runAction(button, busyText, action) {
   } finally {
     button.disabled = false
     labelElement.textContent = label
+  }
+}
+
+function renderTemplates() {
+  templateList.replaceChildren()
+  if (!templates.length) {
+    const empty = document.createElement('div')
+    empty.className = 'template-empty'
+    empty.textContent = '尚未保存命名模板，当前调整会自动保存为草稿。'
+    templateList.append(empty)
+    return
+  }
+  templates.forEach((template) => {
+    const row = document.createElement('div')
+    row.className = `template-record${template.id === activeTemplateId ? ' is-active' : ''}`
+    const open = document.createElement('button')
+    open.type = 'button'
+    open.className = 'template-open'
+    const name = document.createElement('strong')
+    name.textContent = template.name
+    const updated = document.createElement('small')
+    updated.textContent = `更新于 ${new Date(template.updatedAt).toLocaleString('zh-CN')} · ${template.versions.length} 个版本`
+    open.append(name, updated)
+    open.addEventListener('click', () => {
+      activeTemplateId = template.id
+      templateName.value = template.name
+      applyTemplate(template.data)
+      renderTemplates()
+      setMessage(`已加载模板：${template.name}`)
+    })
+    const actions = document.createElement('div')
+    actions.className = 'template-record-actions'
+    const versions = document.createElement('select')
+    versions.className = 'template-version-select'
+    versions.title = '加载历史版本'
+    Array.from(template.versions)
+      .reverse()
+      .forEach((version, index) => {
+        const option = document.createElement('option')
+        option.value = version.id
+        option.textContent =
+          index === 0 ? '当前版本' : new Date(version.createdAt).toLocaleString('zh-CN')
+        versions.append(option)
+      })
+    versions.addEventListener('change', () => {
+      const version = template.versions.find((item) => item.id === versions.value)
+      if (!version) return
+      activeTemplateId = template.id
+      templateName.value = template.name
+      applyTemplate(version.data)
+      renderTemplates()
+      setMessage(`已加载“${template.name}”的历史版本，保存后会生成新版本。`)
+    })
+    const remove = document.createElement('button')
+    remove.type = 'button'
+    remove.className = 'template-delete'
+    remove.textContent = '删除'
+    remove.addEventListener('click', async () => {
+      if (!window.confirm(`确定删除模板“${template.name}”吗？草稿不会被删除。`)) return
+      try {
+        await postEditor('/v1/templates/delete', { id: template.id })
+        templates = templates.filter((item) => item.id !== template.id)
+        if (activeTemplateId === template.id) activeTemplateId = null
+        renderTemplates()
+        setMessage(`已删除模板：${template.name}`)
+      } catch (error) {
+        setMessage(error instanceof Error ? error.message : String(error), true)
+      }
+    })
+    actions.append(versions, remove)
+    row.append(open, actions)
+    templateList.append(row)
+  })
+}
+
+async function initializeTemplates() {
+  try {
+    const library = await editorRequest('/v1/templates')
+    templates = library.templates
+    if (library.draft) {
+      applyTemplate(library.draft)
+      draftStatus.textContent = '已恢复上次草稿'
+    } else {
+      renderRemoteFonts()
+      render(true)
+      draftStatus.textContent = '新草稿'
+    }
+    renderTemplates()
+  } catch (error) {
+    renderRemoteFonts()
+    render(true)
+    draftStatus.textContent = '记录读取失败'
+    setMessage(error instanceof Error ? error.message : String(error), true)
+  } finally {
+    editorReady = true
   }
 }
 
@@ -1007,7 +1183,32 @@ verticalAlignButtons.forEach((button) => {
   )
 })
 byId('addText').addEventListener('click', addText)
-byId('addImage').addEventListener('click', () => imageInput.click())
+byId('addImage').addEventListener('click', () => {
+  addImagePlaceholder()
+  setMessage('已添加图片占位框。')
+})
+byId('newTemplate').addEventListener('click', () => {
+  activeTemplateId = null
+  templateName.value = ''
+  applyTemplate(createDefaultState())
+  renderTemplates()
+  setMessage('已新建默认草稿。')
+})
+byId('saveTemplate').addEventListener('click', (event) =>
+  runAction(event.currentTarget, '保存中…', async () => {
+    const name = templateName.value.trim()
+    if (!name) throw new Error('请先输入模板名称。')
+    const record = await postEditor('/v1/templates/save', {
+      id: activeTemplateId || undefined,
+      name,
+      data: templatePayload()
+    })
+    activeTemplateId = record.id
+    templates = [record, ...templates.filter((item) => item.id !== record.id)]
+    renderTemplates()
+    setMessage(`模板“${record.name}”已保存。`)
+  })
+)
 byId('addRemoteFont').addEventListener('click', () => {
   if (state.fonts.length >= 10) {
     setMessage('远程字体最多添加 10 个。', true)
@@ -1037,18 +1238,6 @@ byId('clearFontCache').addEventListener('click', (event) =>
 document.querySelectorAll('[data-position]').forEach((button) => {
   button.addEventListener('click', () => positionSelected(button.dataset.position))
 })
-imageInput.addEventListener('change', async () => {
-  const file = imageInput.files?.[0]
-  if (!file) return
-  try {
-    await addImage(file)
-    setMessage(`已添加图片：${file.name}`)
-  } catch (error) {
-    setMessage(error instanceof Error ? error.message : String(error), true)
-  } finally {
-    imageInput.value = ''
-  }
-})
 byId('deleteElement').addEventListener('click', () => {
   const index = state.items.findIndex((item) => item.id === state.selectedId)
   if (index < 0) return
@@ -1061,7 +1250,7 @@ byId('copyButton').addEventListener('click', async (event) => {
   const label = button.querySelector('.button-label')
   try {
     await navigator.clipboard.writeText(
-      `await MPrint.print(${JSON.stringify(requestPayload(), null, 2)})`
+      `await MPrint.print(${JSON.stringify(requestPayload(true), null, 2)})`
     )
     setMessage('当前模板调用代码已复制。')
     label.textContent = '已复制'
@@ -1086,5 +1275,5 @@ byId('printButton').addEventListener('click', (event) =>
   })
 )
 window.addEventListener('resize', renderCanvas)
-renderRemoteFonts()
-render(true)
+window.addEventListener('pagehide', flushDraftOnExit)
+void initializeTemplates()

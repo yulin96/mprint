@@ -12,6 +12,7 @@ import {
 } from './font-cache'
 import { openPrintPreview, runPrint } from './print-engine'
 import { PrintQueue } from './print-queue'
+import { deleteTemplate, readTemplateLibrary, saveDraft, saveTemplate } from './template-store'
 
 const host = '127.0.0.1' as const
 const maxRequestBytes = 25 * 1024 * 1024
@@ -208,6 +209,12 @@ export class LocalPrintServer {
     response.end(content)
   }
 
+  private assertEditorRequest(request: IncomingMessage): void {
+    const origin = request.headers.origin
+    const editorOrigin = `http://${host}:${this.settings.port}`
+    if (origin && origin !== editorOrigin) throw new Error('模板记录接口仅供本机模板编辑器使用。')
+  }
+
   private async handle(request: IncomingMessage, response: ServerResponse): Promise<void> {
     if (request.method === 'OPTIONS') {
       writeJson(response, 204, null)
@@ -238,6 +245,26 @@ export class LocalPrintServer {
       }
       if (request.method === 'GET' && url.pathname === '/v1/printers') {
         writeJson(response, 200, await this.getPrinters())
+        return
+      }
+      if (request.method === 'GET' && url.pathname === '/v1/templates') {
+        this.assertEditorRequest(request)
+        writeJson(response, 200, await readTemplateLibrary())
+        return
+      }
+      if (request.method === 'POST' && url.pathname === '/v1/templates/draft') {
+        this.assertEditorRequest(request)
+        writeJson(response, 200, await saveDraft(await readJson(request)))
+        return
+      }
+      if (request.method === 'POST' && url.pathname === '/v1/templates/save') {
+        this.assertEditorRequest(request)
+        writeJson(response, 200, await saveTemplate(await readJson(request)))
+        return
+      }
+      if (request.method === 'POST' && url.pathname === '/v1/templates/delete') {
+        this.assertEditorRequest(request)
+        writeJson(response, 200, await deleteTemplate(await readJson(request)))
         return
       }
       const cachedFontMatch = url.pathname.match(

@@ -476,6 +476,92 @@ h1 {
 .section-action-muted {
   color: var(--muted);
 }
+.template-save-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 7px;
+}
+.template-save-row input {
+  min-width: 0;
+  height: 32px;
+  padding: 0 9px;
+  border: 1px solid var(--line-strong);
+  border-radius: 7px;
+  background: #fff;
+  font-size: 11px;
+}
+.template-list {
+  display: grid;
+  gap: 5px;
+  margin-top: 8px;
+}
+.template-empty {
+  padding: 9px;
+  border: 1px dashed var(--line-strong);
+  border-radius: 7px;
+  color: var(--muted);
+  font-size: 10px;
+  text-align: center;
+}
+.template-record {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 8px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: rgba(255, 255, 255, 0.64);
+}
+.template-record.is-active {
+  border-color: var(--coral);
+  background: var(--coral-soft);
+}
+.template-open {
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  text-align: left;
+}
+.template-open strong,
+.template-open small {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.template-open strong {
+  font-size: 11px;
+}
+.template-open small {
+  margin-top: 1px;
+  color: var(--muted);
+  font-size: 9px;
+}
+.template-delete {
+  padding: 4px;
+  border: 0;
+  background: transparent;
+  color: var(--danger);
+  cursor: pointer;
+  font-size: 10px;
+}
+.template-record-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.template-version-select {
+  width: 78px;
+  height: 25px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: #fff;
+  color: var(--muted);
+  font-size: 9px;
+}
 .section-description {
   margin: -3px 0 10px;
   color: var(--muted);
@@ -680,6 +766,9 @@ h1 {
 .add-actions button:hover {
   border-color: var(--coral);
   color: var(--coral-dark);
+}
+.image-placeholder-description {
+  margin: 8px 0 0;
 }
 .delete-button {
   display: inline-flex;
@@ -991,6 +1080,31 @@ h1 {
   border-color: var(--coral);
   outline: 2px solid rgba(255, 98, 72, 0.2);
   outline-offset: 1px;
+}
+.preview-item.image-placeholder {
+  display: grid;
+  border: 1px dashed var(--line-strong);
+  background:
+    linear-gradient(
+      135deg,
+      transparent calc(50% - 0.5px),
+      var(--line) 50%,
+      transparent calc(50% + 0.5px)
+    ),
+    linear-gradient(
+      45deg,
+      transparent calc(50% - 0.5px),
+      var(--line) 50%,
+      transparent calc(50% + 0.5px)
+    ),
+    rgba(250, 250, 250, 0.78);
+  color: var(--muted);
+  font-size: 11px;
+  place-items: center;
+  text-align: center;
+}
+.preview-item.image-placeholder.is-selected {
+  border-color: var(--coral);
 }
 .paper-meta,
 .stage-help {

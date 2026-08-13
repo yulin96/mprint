@@ -152,6 +152,23 @@
 
       <section class="workspace">
         <aside class="inspector">
+          <section class="panel-section templates-section">
+            <div class="section-heading">
+              <div>
+                <h2>模板记录</h2>
+                <span id="draftStatus">正在读取草稿</span>
+              </div>
+              <button id="newTemplate" class="section-action section-action-muted" type="button">
+                新建
+              </button>
+            </div>
+            <div class="template-save-row">
+              <input id="templateName" type="text" maxlength="80" placeholder="输入模板名称" />
+              <button id="saveTemplate" class="section-action" type="button">保存模板</button>
+            </div>
+            <div id="templateList" class="template-list"></div>
+          </section>
+
           <section class="panel-section">
             <div class="section-heading">
               <h2>元素</h2>
@@ -174,10 +191,12 @@
                   <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" />
                   <circle cx="9" cy="9" r="2" />
                 </svg>
-                添加图片
+                添加图片框
               </button>
-              <input id="imageInput" type="file" accept="image/png,image/jpeg,image/webp" hidden />
             </div>
+            <p class="section-description image-placeholder-description">
+              图片框只记录位置与尺寸；复制代码后由业务填入图片 Data URL。
+            </p>
           </section>
 
           <section class="panel-section remote-fonts-section">
