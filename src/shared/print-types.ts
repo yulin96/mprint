@@ -19,6 +19,15 @@ export type PrintMargin =
 
 export type PrintImageFit = 'fill' | 'contain' | 'cover'
 
+export type PrintFontFormat = 'woff2' | 'woff' | 'truetype' | 'opentype'
+
+export type PrintFontFace = {
+  fontFamily: string
+  src: string
+  fontWeight?: number | 'normal' | 'bold'
+  format?: PrintFontFormat
+}
+
 export type PrintImageItem = {
   src: string
   xMm: number
@@ -53,6 +62,7 @@ export type PrintRequest = {
     xMm?: number
     yMm?: number
   }
+  fonts?: PrintFontFace[]
   background?: PrintImageItem
   images?: PrintImageItem[]
   texts?: PrintTextItem[]

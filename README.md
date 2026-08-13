@@ -23,7 +23,7 @@ http://127.0.0.1:17653/editor/
 
 编辑器顶部配置纸张，并提供一级“打印机默认纸张”开关；左侧管理元素、图层和属性，右侧实时显示打印结果。完成后点击“复制当前代码”，即可把生成的 `MPrint.print(...)` 调用粘贴到业务项目中。
 
-文字元素的字体支持直接输入本机字体名称。在桌面版 Chrome 或 Edge 中，也可以点击“读取系统字体”，授权后从系统字体列表选择。该能力只读取字体名称；当前版本尚未加载远程字体，`fontFamily` 不接受字体 URL。
+文字元素的字体支持直接输入本机字体名称。在桌面版 Chrome 或 Edge 中，也可以点击“读取系统字体”，授权后从系统字体列表选择。远程字体通过打印请求的 `fonts` 数组声明，文字元素继续使用 `fontFamily` 引用字体名称；不要把字体 URL 直接填写到 `fontFamily`。
 
 ## 网页调用
 
@@ -34,6 +34,14 @@ http://127.0.0.1:17653/editor/
 <script>
   await MPrint.print({
     page: 'A4',
+    fonts: [
+      {
+        fontFamily: 'Example Font',
+        src: 'https://static.example.com/fonts/example.woff2',
+        fontWeight: 400,
+        format: 'woff2'
+      }
+    ],
     texts: [
       {
         content: '测试打印',
@@ -41,6 +49,7 @@ http://127.0.0.1:17653/editor/
         yMm: 20,
         widthMm: 80,
         heightMm: 12,
+        fontFamily: 'Example Font',
         align: 'center',
         verticalAlign: 'middle'
       }
@@ -53,6 +62,8 @@ http://127.0.0.1:17653/editor/
   })
 </script>
 ```
+
+`fonts` 最多声明 10 个远程字体文件。`src` 只支持不包含账号密码的 HTTPS 直接字体文件地址；远程服务器必须允许跨域字体访问。`format` 可省略，也可以填写 `woff2`、`woff`、`truetype` 或 `opentype`。同一字体的不同字重需要分别声明。字体加载失败或超过 15 秒时，预览和打印都会报错，不会静默替换为其他字体。远程字体依赖网络可用性，当前版本不会把字体持久化到本地。
 
 `printer.useDefaultPageSize` 为 `true` 时，不向 Windows 打印机指定纸张尺寸，由打印机当前默认配置决定；`page` 仍用于模板坐标、编辑和预览。
 

@@ -5,6 +5,8 @@ import { join } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { BrowserWindow } from 'electron'
 import type {
+  PrintFontFace,
+  PrintFontFormat,
   PrintImageFit,
   PrintImageItem,
   PrintMargin,
@@ -30,12 +32,16 @@ const pageSizes: Record<PrintPagePreset, { widthMm: number; heightMm: number }> 
 const dataImagePattern = /^data:(image\/(?:jpeg|jpg|png|webp));base64,([a-zA-Z0-9+/=\s]+)$/
 const rotations = new Set([0, 90, 180, 270])
 const imageFits = new Set<PrintImageFit>(['fill', 'contain', 'cover'])
+const fontFormats = new Set<PrintFontFormat>(['woff2', 'woff', 'truetype', 'opentype'])
 const imageLoadTimeoutMs = 30000
+const fontLoadTimeoutMs = 15000
 const printResultTimeoutMs = 15000
 const maxImages = 20
 const maxTexts = 200
+const maxFonts = 10
 const maxCopies = 5
 const maxDataImageBytes = 20 * 1024 * 1024
+const maxFontUrlLength = 4096
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null
@@ -104,6 +110,57 @@ function normalizeImage(value: unknown, label: string): PrintImageItem {
   }
 }
 
+function normalizeFont(value: unknown, label: string): PrintFontFace {
+  if (!isRecord(value)) throw new Error(`${label} 参数不正确。`)
+  const fontFamily = typeof value.fontFamily === 'string' ? value.fontFamily.trim() : ''
+  const src = typeof value.src === 'string' ? value.src.trim() : ''
+  if (
+    !fontFamily ||
+    fontFamily.length > 200 ||
+    Array.from(fontFamily).some((character) => {
+      const codePoint = character.codePointAt(0) ?? 0
+      return codePoint < 32 || codePoint === 127
+    }) ||
+    !src ||
+    src.length > maxFontUrlLength
+  ) {
+    throw new Error(`${label} 必须包含有效的 fontFamily 和 src。`)
+  }
+
+  let url: URL
+  try {
+    url = new URL(src)
+  } catch {
+    throw new Error(`${label}.src 必须是有效的 HTTPS 地址。`)
+  }
+  if (url.protocol !== 'https:' || url.username || url.password) {
+    throw new Error(`${label}.src 只支持不包含账号密码的 HTTPS 地址。`)
+  }
+
+  let fontWeight: PrintFontFace['fontWeight'] = 400
+  if (value.fontWeight === 'normal') {
+    fontWeight = 400
+  } else if (value.fontWeight === 'bold') {
+    fontWeight = 700
+  } else if (value.fontWeight !== undefined) {
+    const numericWeight = finite(value.fontWeight)
+    if (numericWeight === null || numericWeight < 1 || numericWeight > 1000) {
+      throw new Error(`${label}.fontWeight 必须是 normal、bold 或 1 到 1000。`)
+    }
+    fontWeight = numericWeight
+  }
+
+  let format: PrintFontFormat | undefined
+  if (value.format !== undefined) {
+    if (!fontFormats.has(value.format as PrintFontFormat)) {
+      throw new Error(`${label}.format 只支持 woff2、woff、truetype 或 opentype。`)
+    }
+    format = value.format as PrintFontFormat
+  }
+
+  return { fontFamily, src: url.toString(), fontWeight, format }
+}
+
 function normalizeText(value: unknown, label: string): PrintTextItem {
   if (!isRecord(value)) throw new Error(`${label} 参数不正确。`)
   const xMm = finite(value.xMm)
@@ -149,17 +206,29 @@ export function normalizePrintRequest(value: unknown): PrintRequest {
   if (!isRecord(value)) throw new Error('打印参数必须是 JSON 对象。')
   const images = Array.isArray(value.images) ? value.images : []
   const texts = Array.isArray(value.texts) ? value.texts : []
+  const fonts = Array.isArray(value.fonts) ? value.fonts : []
   if (images.length > maxImages) throw new Error(`images 最多 ${maxImages} 项。`)
   if (texts.length > maxTexts) throw new Error(`texts 最多 ${maxTexts} 项。`)
+  if (fonts.length > maxFonts) throw new Error(`fonts 最多 ${maxFonts} 项。`)
   const printer = isRecord(value.printer) ? value.printer : {}
   const copies = finite(printer.copies)
   const offset = isRecord(value.offset) ? value.offset : {}
+  const normalizedFonts = fonts.map((item, index) => normalizeFont(item, `fonts[${index}]`))
+  const fontKeys = new Set<string>()
+  normalizedFonts.forEach((font, index) => {
+    const key = `${font.fontFamily}\u0000${font.fontWeight}`
+    if (fontKeys.has(key)) {
+      throw new Error(`fonts[${index}] 与已有字体的 fontFamily 和 fontWeight 重复。`)
+    }
+    fontKeys.add(key)
+  })
 
   return {
     page: normalizePage(value.page),
     landscape: value.landscape === true,
     margin: normalizeMargin(value.margin),
     offset: { xMm: finite(offset.xMm) ?? 0, yMm: finite(offset.yMm) ?? 0 },
+    fonts: normalizedFonts,
     background:
       value.background === undefined ? undefined : normalizeImage(value.background, 'background'),
     images: images.map((item, index) => normalizeImage(item, `images[${index}]`)),
@@ -209,7 +278,39 @@ function escapeCssString(value: string): string {
   return value
     .replace(/\\/g, '\\\\')
     .replace(/'/g, "\\'")
+    .replace(/</g, '\\3c ')
     .replace(/[\r\n]/g, ' ')
+}
+
+function renderFontFace(font: PrintFontFace): string {
+  const format = font.format ? ` format('${font.format}')` : ''
+  return `@font-face{font-family:'${escapeCssString(font.fontFamily)}';src:url('${escapeCssString(font.src)}')${format};font-weight:${font.fontWeight ?? 400};font-style:normal;font-display:block}`
+}
+
+function inlineJson(value: unknown): string {
+  return JSON.stringify(value)
+    .replace(/</g, '\\u003c')
+    .replace(/\u2028/g, '\\u2028')
+    .replace(/\u2029/g, '\\u2029')
+}
+
+function fontLoadRequests(request: PrintRequest): Array<{
+  family: string
+  descriptor: string
+  sample: string
+}> {
+  return (request.fonts ?? []).map((font) => {
+    const sample = (request.texts ?? [])
+      .filter((text) => text.fontFamily === font.fontFamily)
+      .map((text) => text.content)
+      .join('')
+      .slice(0, 512)
+    return {
+      family: font.fontFamily,
+      descriptor: `${font.fontWeight ?? 400} 12px '${escapeCssString(font.fontFamily)}'`,
+      sample: sample || 'mprint 字体加载验证'
+    }
+  })
 }
 
 function imageExtension(mime: string): string {
@@ -252,13 +353,17 @@ function renderHtml(request: PrintRequest, preview: boolean): string {
   const offset = request.offset ?? {}
   const images = [request.background, ...(request.images ?? [])].filter(Boolean) as PrintImageItem[]
   const cssPage = `${size.widthMm}mm ${size.heightMm}mm`
+  const fontLoads = inlineJson(fontLoadRequests(request))
   return `<!doctype html><html><head><meta charset="utf-8"><style>
+${(request.fonts ?? []).map(renderFontFace).join('\n')}
 @page{${request.printer?.useDefaultPageSize ? '' : `size:${cssPage};`}margin:${margin.topMm}mm ${margin.rightMm}mm ${margin.bottomMm}mm ${margin.leftMm}mm}
 html,body{margin:0;padding:0}html{background:${preview ? '#e9e5dc' : '#fff'}}body{position:relative;width:${size.widthMm}mm;height:${size.heightMm}mm;margin:${preview ? '24px auto' : '0'};overflow:hidden;background:#fff;${preview ? 'box-shadow:0 16px 48px rgba(36,31,25,.18)' : ''};-webkit-print-color-adjust:exact;print-color-adjust:exact}
 </style></head><body><div style="position:absolute;left:${offset.xMm ?? 0}mm;top:${offset.yMm ?? 0}mm;width:100%;height:100%">
 ${images.map(renderImage).join('')}${(request.texts ?? []).map(renderText).join('')}</div><script>
 function draw(canvas){return new Promise(resolve=>{const image=new Image();let done=false;const finish=(success,reason='')=>{if(done)return;done=true;clearTimeout(timer);resolve({index:Number(canvas.dataset.image),success,reason})};const timer=setTimeout(()=>finish(false,'图片加载超时'),${imageLoadTimeoutMs});image.onload=()=>{try{const context=canvas.getContext('2d');if(!context)return finish(false,'无法创建画布');const width=canvas.width,height=canvas.height,fit=canvas.dataset.fit,rotate=Number(canvas.dataset.rotate),quarter=rotate===90||rotate===270;context.fillStyle='#fff';context.fillRect(0,0,width,height);let drawWidth=quarter?height:width,drawHeight=quarter?width:height;if(fit==='contain'||fit==='cover'){const scale=fit==='contain'?Math.min(width/(quarter?image.naturalHeight:image.naturalWidth),height/(quarter?image.naturalWidth:image.naturalHeight)):Math.max(width/(quarter?image.naturalHeight:image.naturalWidth),height/(quarter?image.naturalWidth:image.naturalHeight));drawWidth=image.naturalWidth*scale;drawHeight=image.naturalHeight*scale}context.save();context.translate(width/2,height/2);context.rotate(rotate*Math.PI/180);context.drawImage(image,-drawWidth/2,-drawHeight/2,drawWidth,drawHeight);context.restore();finish(true)}catch(error){finish(false,String(error))}};image.onerror=()=>finish(false,'图片加载失败');image.src=canvas.dataset.src})}
-window.__mprintReady=Promise.all(Array.from(document.querySelectorAll('canvas')).map(draw)).then(async result=>{if(document.fonts)await document.fonts.ready;return result})
+const fontLoads=${fontLoads};
+async function loadFont(item){if(!document.fonts)throw new Error('当前打印环境不支持加载声明字体。');const faces=await Promise.race([document.fonts.load(item.descriptor,item.sample),new Promise((_,reject)=>setTimeout(()=>reject(new Error('字体加载超时：'+item.family)),${fontLoadTimeoutMs}))]);if(!faces.length)throw new Error('字体加载失败：'+item.family)}
+window.__mprintReady=(async()=>{const result=await Promise.all(Array.from(document.querySelectorAll('canvas')).map(draw));await Promise.all(fontLoads.map(loadFont));if(document.fonts)await document.fonts.ready;return result})()
 </script></body></html>`
 }
 
