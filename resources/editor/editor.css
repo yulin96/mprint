@@ -21,10 +21,6 @@
   --dropdown-pre-scale: 0.97;
   --dropdown-closing-scale: 0.99;
   --dropdown-ease: cubic-bezier(0.22, 1, 0.36, 1);
-  --acc-expand: 250ms;
-  --acc-collapse: 250ms;
-  --acc-chevron: 250ms;
-  --acc-ease: cubic-bezier(0.22, 1, 0.36, 1);
   font-family: 'Microsoft YaHei UI', 'PingFang SC', 'Segoe UI', sans-serif;
 }
 
@@ -87,7 +83,7 @@ button {
 .delete-button,
 .element-item,
 .canvas-toolbar button,
-.t-acc-head {
+.text-align-toolbar button {
   transition:
     color var(--duration-quick) var(--ease-smooth-out),
     border-color var(--duration-quick) var(--ease-smooth-out),
@@ -545,7 +541,7 @@ h1 {
   grid-column: 1 / -1;
 }
 .font-field {
-  grid-column: span 2;
+  grid-column: 1 / -1;
 }
 .field-heading {
   display: flex;
@@ -713,90 +709,18 @@ h1 {
   padding-top: 10px;
   border-top: 1px solid var(--line);
 }
-.advanced-properties .t-acc-head {
+.geometry-heading {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 12px;
-  width: 100%;
-  padding: 0;
-  border: 0;
-  background: transparent;
-  cursor: pointer;
   font-size: 12px;
-  font-weight: 700;
-  text-align: left;
 }
-.advanced-properties .t-acc-head:hover {
-  color: var(--coral-dark);
-}
-.advanced-properties-meta {
-  margin-left: auto;
+.geometry-heading span {
   color: var(--muted);
   font-family: Consolas, monospace;
   font-size: 10px;
   font-weight: 400;
-}
-.t-acc-chevron svg {
-  width: 14px;
-  fill: none;
-  stroke: currentColor;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  stroke-width: 1.5;
-}
-
-/* grid-template-rows 0fr → 1fr gives a clean height animation
-   with no JS measurement; the inner element clips overflow. */
-.t-acc-panel {
-  display: grid;
-  grid-template-rows: 0fr;
-  transition: grid-template-rows var(--acc-collapse) var(--acc-ease);
-}
-.t-acc[data-open='true'] .t-acc-panel {
-  grid-template-rows: 1fr;
-  transition: grid-template-rows var(--acc-expand) var(--acc-ease);
-}
-.t-acc-panel-inner {
-  overflow: hidden;
-  opacity: 0;
-  filter: blur(2px);
-  transition:
-    opacity var(--acc-collapse) var(--acc-ease),
-    filter var(--acc-collapse) var(--acc-ease);
-}
-.t-acc[data-open='true'] .t-acc-panel-inner {
-  opacity: 1;
-  filter: blur(0);
-  transition:
-    opacity var(--acc-expand) var(--acc-ease),
-    filter var(--acc-expand) var(--acc-ease);
-}
-/* Flip the chevron vertically to turn the "v" into a "^".
-   scaleY(-1) about the centre passes through a flat line at
-   the midpoint (same look as a `d:` path morph) but animates
-   in every browser, unlike CSS `d:` morphing (Chromium only).
-   The chevron path is symmetric about the 16x16 viewBox
-   centre, so the flip lands exactly on the "^"; non-scaling
-   -stroke keeps the stroke width constant through the flip. */
-.t-acc-chevron {
-  display: inline-flex;
-  transform: scaleY(1);
-  transform-origin: center;
-  transition: transform var(--acc-chevron) var(--acc-ease);
-}
-.t-acc-chevron path {
-  vector-effect: non-scaling-stroke;
-}
-.t-acc[data-open='true'] .t-acc-chevron {
-  transform: scaleY(-1);
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .t-acc-panel,
-  .t-acc-panel-inner,
-  .t-acc-chevron {
-    transition: none !important;
-  }
 }
 .geometry-grid {
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -820,7 +744,7 @@ h1 {
   position: absolute;
   z-index: 10;
   top: 39px;
-  left: 50%;
+  left: 58px;
   display: flex;
   align-items: center;
   gap: 6px;
@@ -829,10 +753,49 @@ h1 {
   border-radius: 10px;
   background: rgba(255, 255, 255, 0.94);
   box-shadow: 0 9px 26px rgba(67, 58, 46, 0.16);
-  transform: translateX(-50%);
 }
 .canvas-toolbar[hidden] {
   display: none;
+}
+.text-align-toolbar {
+  position: absolute;
+  z-index: 10;
+  top: 39px;
+  right: 58px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 38px;
+  padding: 5px 7px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: 0 9px 26px rgba(67, 58, 46, 0.16);
+}
+.text-align-toolbar[hidden] {
+  display: none;
+}
+.text-align-toolbar > span {
+  margin-right: 3px;
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.text-align-toolbar button {
+  display: grid;
+  width: 29px;
+  height: 29px;
+  padding: 0;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  cursor: pointer;
+  place-items: center;
+}
+.text-align-toolbar button:hover,
+.text-align-toolbar button.is-active {
+  background: var(--coral-soft);
+  color: var(--coral-dark);
 }
 .canvas-toolbar > span {
   margin-right: 3px;
@@ -860,7 +823,8 @@ h1 {
   background: var(--coral-soft);
   color: var(--coral-dark);
 }
-.canvas-toolbar svg {
+.canvas-toolbar svg,
+.text-align-toolbar svg {
   width: 17px;
   fill: none;
   stroke: currentColor;
@@ -953,6 +917,12 @@ h1 {
   }
 }
 
+@media (max-width: 1120px) {
+  .text-align-toolbar {
+    top: 84px;
+  }
+}
+
 @media (max-height: 680px) {
   body {
     overflow-y: auto;
@@ -977,7 +947,7 @@ h1 {
   .delete-button,
   .element-item,
   .canvas-toolbar button,
-  .t-acc-head {
+  .text-align-toolbar button {
     transition: none !important;
   }
 }

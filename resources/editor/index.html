@@ -244,6 +244,69 @@
               </svg>
             </button>
           </div>
+          <div id="textAlignToolbar" class="text-align-toolbar" aria-label="文字对齐方式" hidden>
+            <span>文字对齐</span>
+            <div class="toolbar-group" aria-label="水平对齐">
+              <button
+                type="button"
+                data-text-align="left"
+                aria-label="文字左对齐"
+                title="文字左对齐"
+              >
+                <svg viewBox="0 0 20 20" aria-hidden="true">
+                  <path d="M4 3v14M7 6h8M7 10h5M7 14h7" />
+                </svg>
+              </button>
+              <button type="button" data-text-align="center" aria-label="文字居中" title="文字居中">
+                <svg viewBox="0 0 20 20" aria-hidden="true">
+                  <path d="M10 3v14M5 6h10M7 10h6M6 14h8" />
+                </svg>
+              </button>
+              <button
+                type="button"
+                data-text-align="right"
+                aria-label="文字右对齐"
+                title="文字右对齐"
+              >
+                <svg viewBox="0 0 20 20" aria-hidden="true">
+                  <path d="M16 3v14M5 6h8M8 10h5M6 14h7" />
+                </svg>
+              </button>
+            </div>
+            <div class="toolbar-divider" aria-hidden="true"></div>
+            <div class="toolbar-group" aria-label="垂直对齐">
+              <button
+                type="button"
+                data-vertical-align="top"
+                aria-label="文字顶部对齐"
+                title="文字顶部对齐"
+              >
+                <svg viewBox="0 0 20 20" aria-hidden="true">
+                  <path d="M3 4h14M6 7v8M10 7v5M14 7v7" />
+                </svg>
+              </button>
+              <button
+                type="button"
+                data-vertical-align="middle"
+                aria-label="文字垂直居中"
+                title="文字垂直居中"
+              >
+                <svg viewBox="0 0 20 20" aria-hidden="true">
+                  <path d="M3 10h14M6 5v10M10 7v6M14 6v8" />
+                </svg>
+              </button>
+              <button
+                type="button"
+                data-vertical-align="bottom"
+                aria-label="文字底部对齐"
+                title="文字底部对齐"
+              >
+                <svg viewBox="0 0 20 20" aria-hidden="true">
+                  <path d="M3 16h14M6 5v8M10 8v5M14 6v7" />
+                </svg>
+              </button>
+            </div>
+          </div>
           <div id="paper" class="paper"></div>
           <div id="paperMeta" class="paper-meta">—</div>
           <div class="stage-help">点击元素选择 · 拖动调整位置</div>

@@ -70,6 +70,9 @@ const paperControl = byId('paperControl')
 const paperSettingsButton = byId('paperSettingsButton')
 const paperPopover = byId('paperPopover')
 const canvasToolbar = byId('canvasToolbar')
+const textAlignToolbar = byId('textAlignToolbar')
+const textAlignButtons = Array.from(document.querySelectorAll('[data-text-align]'))
+const verticalAlignButtons = Array.from(document.querySelectorAll('[data-vertical-align]'))
 const elementList = byId('elementList')
 const elementCount = byId('elementCount')
 const remoteFontList = byId('remoteFontList')
@@ -552,25 +555,6 @@ function renderProperties() {
         wide: true
       }),
       fontControl(item),
-      control('对齐', item.align || 'left', (value) => updateSelected('align', value), {
-        choices: [
-          ['left', '左对齐'],
-          ['center', '居中'],
-          ['right', '右对齐']
-        ]
-      }),
-      control(
-        '垂直对齐',
-        item.verticalAlign || 'top',
-        (value) => updateSelected('verticalAlign', value),
-        {
-          choices: [
-            ['top', '顶部'],
-            ['middle', '居中'],
-            ['bottom', '底部']
-          ]
-        }
-      ),
       control(
         '字号 pt',
         item.fontSizePt || 12,
@@ -612,23 +596,15 @@ function renderProperties() {
     )
   }
 
-  const accordion = document.createElement('div')
-  accordion.className = 'advanced-properties t-acc'
-  accordion.dataset.open = 'false'
-  const summary = document.createElement('button')
-  summary.type = 'button'
-  summary.className = 't-acc-head'
-  summary.setAttribute('aria-expanded', 'false')
-  const summaryTitle = document.createElement('strong')
-  summaryTitle.textContent = '位置与尺寸'
-  const summaryMeta = document.createElement('span')
-  summaryMeta.className = 'advanced-properties-meta'
-  summaryMeta.textContent = `${item.xMm}, ${item.yMm} · ${item.widthMm} × ${item.heightMm} mm`
-  const chevron = document.createElement('span')
-  chevron.className = 't-acc-chevron'
-  chevron.setAttribute('aria-hidden', 'true')
-  chevron.innerHTML = '<svg viewBox="0 0 16 16"><path d="M4 6.5L8 10.5L12 6.5" /></svg>'
-  summary.append(summaryTitle, summaryMeta, chevron)
+  const geometrySection = document.createElement('div')
+  geometrySection.className = 'advanced-properties'
+  const geometryHeading = document.createElement('div')
+  geometryHeading.className = 'geometry-heading'
+  const geometryTitle = document.createElement('strong')
+  geometryTitle.textContent = '位置与尺寸'
+  const geometryMeta = document.createElement('span')
+  geometryMeta.textContent = `${item.xMm}, ${item.yMm} · ${item.widthMm} × ${item.heightMm} mm`
+  geometryHeading.append(geometryTitle, geometryMeta)
   const geometryGrid = document.createElement('div')
   geometryGrid.className = 'form-grid geometry-grid'
   geometryGrid.append(
@@ -649,25 +625,8 @@ function renderProperties() {
       ]
     })
   )
-  const panel = document.createElement('div')
-  panel.className = 't-acc-panel'
-  panel.id = `geometry-${item.id}`
-  panel.inert = true
-  panel.setAttribute('aria-hidden', 'true')
-  summary.setAttribute('aria-controls', panel.id)
-  const panelInner = document.createElement('div')
-  panelInner.className = 't-acc-panel-inner'
-  panelInner.append(geometryGrid)
-  panel.append(panelInner)
-  summary.addEventListener('click', () => {
-    const open = accordion.dataset.open === 'true'
-    accordion.dataset.open = String(!open)
-    summary.setAttribute('aria-expanded', String(!open))
-    panel.inert = open
-    panel.setAttribute('aria-hidden', String(open))
-  })
-  accordion.append(summary, panel)
-  propertyForm.append(accordion)
+  geometrySection.append(geometryHeading, geometryGrid)
+  propertyForm.append(geometrySection)
 }
 
 function renderList() {
@@ -717,7 +676,20 @@ function startDrag(event, item) {
 
 function renderCanvas() {
   const size = orientedPage()
-  canvasToolbar.hidden = !selectedItem()
+  const selected = selectedItem()
+  canvasToolbar.hidden = !selected
+  textAlignToolbar.hidden = selected?.type !== 'text'
+  if (selected?.type === 'text') {
+    textAlignButtons.forEach((button) => {
+      button.classList.toggle('is-active', button.dataset.textAlign === (selected.align || 'left'))
+    })
+    verticalAlignButtons.forEach((button) => {
+      button.classList.toggle(
+        'is-active',
+        button.dataset.verticalAlign === (selected.verticalAlign || 'top')
+      )
+    })
+  }
   const maxWidth = Math.max(420, stage.clientWidth - 150)
   const maxHeight = Math.max(420, stage.clientHeight - 130)
   canvasScale = Math.min(maxWidth / size.widthMm, maxHeight / size.heightMm)
@@ -941,6 +913,14 @@ useDefaultPageSize.addEventListener('change', () => {
       : '打印时将使用当前模板纸张尺寸。'
   )
   render()
+})
+textAlignButtons.forEach((button) => {
+  button.addEventListener('click', () => updateSelected('align', button.dataset.textAlign))
+})
+verticalAlignButtons.forEach((button) => {
+  button.addEventListener('click', () =>
+    updateSelected('verticalAlign', button.dataset.verticalAlign)
+  )
 })
 byId('addText').addEventListener('click', addText)
 byId('addImage').addEventListener('click', () => imageInput.click())
