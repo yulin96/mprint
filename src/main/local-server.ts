@@ -3,11 +3,29 @@ import { readFile } from 'node:fs/promises'
 import { join } from 'node:path'
 import { app, type WebContents } from 'electron'
 import type { AppSettings, PrinterSummary, PrintResult, ServiceStatus } from '../shared/print-types'
+import {
+  clearCachedFonts,
+  ensureCachedFont,
+  getCachedFontFile,
+  normalizeFontFace,
+  removeCachedFont
+} from './font-cache'
 import { openPrintPreview, runPrint } from './print-engine'
 import { PrintQueue } from './print-queue'
 
 const host = '127.0.0.1' as const
 const maxRequestBytes = 25 * 1024 * 1024
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null
+}
+
+function fontContentType(format: string): string {
+  if (format === 'woff2') return 'font/woff2'
+  if (format === 'woff') return 'font/woff'
+  if (format === 'truetype') return 'font/ttf'
+  return 'font/otf'
+}
 
 function writeJson(response: ServerResponse, statusCode: number, body: unknown): void {
   response.writeHead(statusCode, {
@@ -129,6 +147,41 @@ export class LocalPrintServer {
     return openPrintPreview(value)
   }
 
+  private async cacheFont(value: unknown): Promise<{
+    success: true
+    source: 'cache' | 'download'
+    fontUrl: string
+    sizeBytes: number
+  }> {
+    if (!isRecord(value)) throw new Error('字体缓存参数必须是 JSON 对象。')
+    const font = normalizeFontFace(value.font, 'font')
+    const cached = await ensureCachedFont(font, { refresh: value.refresh === true })
+    return {
+      success: true,
+      source: cached.source,
+      fontUrl: `http://${host}:${this.settings.port}/v1/fonts/cache/${cached.fileName}?v=${cached.version}`,
+      sizeBytes: cached.sizeBytes
+    }
+  }
+
+  private async removeFontCache(value: unknown): Promise<{ success: true; removed: boolean }> {
+    if (!isRecord(value)) throw new Error('字体缓存参数必须是 JSON 对象。')
+    const font = normalizeFontFace(value.font, 'font')
+    return { success: true, removed: await removeCachedFont(font) }
+  }
+
+  private async serveCachedFont(response: ServerResponse, fileName: string): Promise<void> {
+    const font = await getCachedFontFile(fileName)
+    response.writeHead(200, {
+      'Content-Type': fontContentType(font.format),
+      'Content-Length': String(font.sizeBytes),
+      'Access-Control-Allow-Origin': '*',
+      'Cross-Origin-Resource-Policy': 'cross-origin',
+      'Cache-Control': 'public, max-age=31536000, immutable'
+    })
+    response.end(font.content)
+  }
+
   private async serveSdk(response: ServerResponse): Promise<void> {
     const sdkPath = join(app.getAppPath(), 'resources', 'sdk', 'mprint.js')
     const content = await readFile(sdkPath, 'utf8')
@@ -185,6 +238,25 @@ export class LocalPrintServer {
       }
       if (request.method === 'GET' && url.pathname === '/v1/printers') {
         writeJson(response, 200, await this.getPrinters())
+        return
+      }
+      const cachedFontMatch = url.pathname.match(
+        /^\/v1\/fonts\/cache\/([a-f0-9]{64}\.(?:woff2|woff|ttf|otf))$/
+      )
+      if (request.method === 'GET' && cachedFontMatch) {
+        await this.serveCachedFont(response, cachedFontMatch[1])
+        return
+      }
+      if (request.method === 'POST' && url.pathname === '/v1/fonts/cache') {
+        writeJson(response, 200, await this.cacheFont(await readJson(request)))
+        return
+      }
+      if (request.method === 'POST' && url.pathname === '/v1/fonts/cache/remove') {
+        writeJson(response, 200, await this.removeFontCache(await readJson(request)))
+        return
+      }
+      if (request.method === 'POST' && url.pathname === '/v1/fonts/cache/clear') {
+        writeJson(response, 200, { success: true, removed: await clearCachedFonts() })
         return
       }
       if (request.method === 'POST' && url.pathname === '/v1/print') {

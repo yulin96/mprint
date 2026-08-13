@@ -23,7 +23,7 @@ http://127.0.0.1:17653/editor/
 
 编辑器顶部配置纸张，并提供一级“打印机默认纸张”开关；左侧管理元素、图层和属性，右侧实时显示打印结果。完成后点击“复制当前代码”，即可把生成的 `MPrint.print(...)` 调用粘贴到业务项目中。
 
-文字元素的字体支持直接输入本机字体名称。在桌面版 Chrome 或 Edge 中，也可以点击“读取系统字体”，授权后从系统字体列表选择。编辑器的“远程字体”区域可以添加字体名称、HTTPS 字体链接、字重和格式，并通过“验证加载”确认编辑画布可用；声明成功的字体会出现在文字元素的字体候选中。远程字体通过打印请求的 `fonts` 数组传递，文字元素继续使用 `fontFamily` 引用字体名称；不要把字体 URL 直接填写到 `fontFamily`。
+文字元素的字体支持直接输入本机字体名称。在桌面版 Chrome 或 Edge 中，也可以点击“读取系统字体”，授权后从系统字体列表选择。编辑器的“远程字体”区域可以添加字体名称、HTTPS 字体链接、字重和格式；“加载”优先读取本地缓存，没有缓存时才下载，“刷新”强制重新下载，“清缓存”删除当前字体的本地文件但保留声明，“清空缓存”删除全部缓存文件。声明的字体会出现在文字元素的字体候选中。远程字体通过打印请求的 `fonts` 数组传递，文字元素继续使用 `fontFamily` 引用字体名称；不要把字体 URL 直接填写到 `fontFamily`。
 
 ## 网页调用
 
@@ -63,7 +63,9 @@ http://127.0.0.1:17653/editor/
 </script>
 ```
 
-`fonts` 最多声明 10 个远程字体文件。`src` 只支持不包含账号密码的 HTTPS 直接字体文件地址；远程服务器必须允许跨域字体访问。`format` 可省略，也可以填写 `woff2`、`woff`、`truetype` 或 `opentype`。同一字体的不同字重需要分别声明。字体加载失败或超过 15 秒时，预览和打印都会报错，不会静默替换为其他字体。远程字体依赖网络可用性，当前版本不会把字体持久化到本地。
+`fonts` 最多声明 10 个远程字体文件。`src` 只支持不包含账号密码的公开 HTTPS 地址，不能指向本机、私有或保留网络。`format` 可以填写 `woff2`、`woff`、`truetype` 或 `opentype`；链接带有 `.woff2`、`.woff`、`.ttf` 或 `.otf` 扩展名时可以省略。同一字体的不同字重需要分别声明。
+
+远程字体首次使用时由 mprint 主进程下载并校验真实文件格式，然后保存到 Electron `userData/fonts`。缓存键由字体地址和格式生成，普通预览及打印命中缓存后不再访问远程地址；打印任务只加载复制到任务临时目录的本地字体文件。单个字体最多 30MB，全部字体缓存最多 200MB，下载超时为 20 秒、最多跟随 3 次 HTTPS 重定向。刷新失败不会覆盖已有缓存。打印加载本地字体失败或超过 15 秒时会报错，不会静默替换为其他字体。
 
 `printer.useDefaultPageSize` 为 `true` 时，不向 Windows 打印机指定纸张尺寸，由打印机当前默认配置决定；`page` 仍用于模板坐标、编辑和预览。
 
@@ -73,6 +75,9 @@ SDK API：
 - `MPrint.preview(request)`：打开独立打印结果预览。
 - `MPrint.getPrinters()`：读取打印机列表。
 - `MPrint.health()`：读取本地服务状态。
+- `MPrint.cacheFont(font, { refresh })`：下载或读取字体缓存并返回本地字体地址。
+- `MPrint.removeCachedFont(font)`：删除指定字体缓存。
+- `MPrint.clearFontCache()`：删除全部字体缓存。
 - `MPrint.configure({ port })`：连接非默认端口。
 
 HTTPS 业务页面建议把 `resources/sdk/mprint.js` 部署到自己的 HTTPS 静态资源域名，SDK 仍请求本机 `http://127.0.0.1`。Chrome/Edge 可能要求用户允许网站访问本地网络。
@@ -84,6 +89,10 @@ GET  /editor/
 GET  /mprint.js
 GET  /v1/health
 GET  /v1/printers
+GET  /v1/fonts/cache/:file
+POST /v1/fonts/cache
+POST /v1/fonts/cache/remove
+POST /v1/fonts/cache/clear
 POST /v1/preview
 POST /v1/print
 ```

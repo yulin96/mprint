@@ -440,6 +440,14 @@ h1 {
 .section-action:hover {
   border-color: var(--coral);
 }
+.section-heading > .section-heading-actions {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.section-action-muted {
+  color: var(--muted);
+}
 .section-description {
   margin: -3px 0 10px;
   color: var(--muted);
@@ -477,6 +485,8 @@ h1 {
   gap: 8px;
 }
 .remote-font-status {
+  flex: 1 1 auto;
+  min-width: 0;
   overflow: hidden;
   color: var(--muted);
   font-size: 10px;
@@ -507,11 +517,18 @@ h1 {
 .remote-font-load {
   color: var(--coral-dark);
 }
+.remote-font-clear {
+  color: var(--muted);
+}
 .remote-font-delete {
   color: var(--danger);
 }
 .remote-font-actions button:hover {
   background: #f1efeb;
+}
+.remote-font-actions button:disabled {
+  cursor: wait;
+  opacity: 0.5;
 }
 .form-grid {
   display: grid;

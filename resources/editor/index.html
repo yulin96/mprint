@@ -140,9 +140,18 @@
                 <h2>远程字体</h2>
                 <span id="remoteFontCount">0 个</span>
               </div>
-              <button id="addRemoteFont" class="section-action" type="button">添加字体</button>
+              <div class="section-heading-actions">
+                <button
+                  id="clearFontCache"
+                  class="section-action section-action-muted"
+                  type="button"
+                >
+                  清空缓存
+                </button>
+                <button id="addRemoteFont" class="section-action" type="button">添加字体</button>
+              </div>
             </div>
-            <p class="section-description">声明 HTTPS 字体文件，供文字元素选择和打印。</p>
+            <p class="section-description">首次下载后保存到本机，后续预览与打印使用缓存。</p>
             <div id="remoteFontList" class="remote-font-list"></div>
           </section>
 

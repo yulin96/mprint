@@ -6,7 +6,6 @@ import { pathToFileURL } from 'node:url'
 import { BrowserWindow } from 'electron'
 import type {
   PrintFontFace,
-  PrintFontFormat,
   PrintImageFit,
   PrintImageItem,
   PrintMargin,
@@ -16,6 +15,7 @@ import type {
   PrintResult,
   PrintTextItem
 } from '../shared/print-types'
+import { copyCachedFont, fontFileExtension, normalizeFontFace } from './font-cache'
 
 const pageSizes: Record<PrintPagePreset, { widthMm: number; heightMm: number }> = {
   A3: { widthMm: 297, heightMm: 420 },
@@ -32,7 +32,6 @@ const pageSizes: Record<PrintPagePreset, { widthMm: number; heightMm: number }> 
 const dataImagePattern = /^data:(image\/(?:jpeg|jpg|png|webp));base64,([a-zA-Z0-9+/=\s]+)$/
 const rotations = new Set([0, 90, 180, 270])
 const imageFits = new Set<PrintImageFit>(['fill', 'contain', 'cover'])
-const fontFormats = new Set<PrintFontFormat>(['woff2', 'woff', 'truetype', 'opentype'])
 const imageLoadTimeoutMs = 30000
 const fontLoadTimeoutMs = 15000
 const printResultTimeoutMs = 15000
@@ -41,7 +40,6 @@ const maxTexts = 200
 const maxFonts = 10
 const maxCopies = 5
 const maxDataImageBytes = 20 * 1024 * 1024
-const maxFontUrlLength = 4096
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null
@@ -110,57 +108,6 @@ function normalizeImage(value: unknown, label: string): PrintImageItem {
   }
 }
 
-function normalizeFont(value: unknown, label: string): PrintFontFace {
-  if (!isRecord(value)) throw new Error(`${label} 参数不正确。`)
-  const fontFamily = typeof value.fontFamily === 'string' ? value.fontFamily.trim() : ''
-  const src = typeof value.src === 'string' ? value.src.trim() : ''
-  if (
-    !fontFamily ||
-    fontFamily.length > 200 ||
-    Array.from(fontFamily).some((character) => {
-      const codePoint = character.codePointAt(0) ?? 0
-      return codePoint < 32 || codePoint === 127
-    }) ||
-    !src ||
-    src.length > maxFontUrlLength
-  ) {
-    throw new Error(`${label} 必须包含有效的 fontFamily 和 src。`)
-  }
-
-  let url: URL
-  try {
-    url = new URL(src)
-  } catch {
-    throw new Error(`${label}.src 必须是有效的 HTTPS 地址。`)
-  }
-  if (url.protocol !== 'https:' || url.username || url.password) {
-    throw new Error(`${label}.src 只支持不包含账号密码的 HTTPS 地址。`)
-  }
-
-  let fontWeight: PrintFontFace['fontWeight'] = 400
-  if (value.fontWeight === 'normal') {
-    fontWeight = 400
-  } else if (value.fontWeight === 'bold') {
-    fontWeight = 700
-  } else if (value.fontWeight !== undefined) {
-    const numericWeight = finite(value.fontWeight)
-    if (numericWeight === null || numericWeight < 1 || numericWeight > 1000) {
-      throw new Error(`${label}.fontWeight 必须是 normal、bold 或 1 到 1000。`)
-    }
-    fontWeight = numericWeight
-  }
-
-  let format: PrintFontFormat | undefined
-  if (value.format !== undefined) {
-    if (!fontFormats.has(value.format as PrintFontFormat)) {
-      throw new Error(`${label}.format 只支持 woff2、woff、truetype 或 opentype。`)
-    }
-    format = value.format as PrintFontFormat
-  }
-
-  return { fontFamily, src: url.toString(), fontWeight, format }
-}
-
 function normalizeText(value: unknown, label: string): PrintTextItem {
   if (!isRecord(value)) throw new Error(`${label} 参数不正确。`)
   const xMm = finite(value.xMm)
@@ -213,7 +160,7 @@ export function normalizePrintRequest(value: unknown): PrintRequest {
   const printer = isRecord(value.printer) ? value.printer : {}
   const copies = finite(printer.copies)
   const offset = isRecord(value.offset) ? value.offset : {}
-  const normalizedFonts = fonts.map((item, index) => normalizeFont(item, `fonts[${index}]`))
+  const normalizedFonts = fonts.map((item, index) => normalizeFontFace(item, `fonts[${index}]`))
   const fontKeys = new Set<string>()
   normalizedFonts.forEach((font, index) => {
     const key = `${font.fontFamily}\u0000${font.fontWeight}`
@@ -332,6 +279,17 @@ async function prepareImages(request: PrintRequest, directory: string): Promise<
   }
 }
 
+async function prepareFonts(request: PrintRequest, directory: string): Promise<PrintRequest> {
+  const fonts = await Promise.all(
+    (request.fonts ?? []).map(async (font, index) => {
+      const filePath = join(directory, `font-${index}.${fontFileExtension(font.format!)}`)
+      await copyCachedFont(font, filePath)
+      return { ...font, src: pathToFileURL(filePath).toString() }
+    })
+  )
+  return { ...request, fonts }
+}
+
 function renderImage(item: PrintImageItem, index: number): string {
   const ratio = 300 / 25.4
   return `<canvas data-image="${index}" data-src="${escapeHtml(item.src)}" data-fit="${item.fit}" data-rotate="${item.rotate}" width="${Math.round(item.widthMm * ratio)}" height="${Math.round(item.heightMm * ratio)}" style="position:absolute;left:${item.xMm}mm;top:${item.yMm}mm;width:${item.widthMm}mm;height:${item.heightMm}mm"></canvas>`
@@ -405,7 +363,8 @@ export async function runPrint(value: unknown): Promise<PrintResult> {
   const directory = await mkdtemp(join(tmpdir(), 'mprint-'))
   let window: BrowserWindow | null = null
   try {
-    const request = await prepareImages(normalizePrintRequest(value), directory)
+    const normalized = normalizePrintRequest(value)
+    const request = await prepareImages(await prepareFonts(normalized, directory), directory)
     const htmlPath = join(directory, 'print.html')
     await writeFile(htmlPath, renderHtml(request, false), 'utf8')
     window = new BrowserWindow({
@@ -426,7 +385,8 @@ export async function openPrintPreview(value: unknown): Promise<void> {
   let window: BrowserWindow | null = null
   let cleanupOnClose = false
   try {
-    const request = await prepareImages(normalizePrintRequest(value), directory)
+    const normalized = normalizePrintRequest(value)
+    const request = await prepareImages(await prepareFonts(normalized, directory), directory)
     const size = dimensions(request.page, request.landscape)
     const htmlPath = join(directory, 'preview.html')
     await writeFile(htmlPath, renderHtml(request, true), 'utf8')

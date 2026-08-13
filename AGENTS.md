@@ -21,7 +21,7 @@
 - 本地服务只监听 `127.0.0.1`，不得改为 `0.0.0.0`。
 - SDK 保持直接调用：`MPrint.print(request)`，不要增加连接或鉴权前置流程。
 - 打印参数使用毫米作为布局单位；预览和实际打印必须共用同一请求结构。
-- `fontFamily` 引用打印电脑已安装的字体或请求 `fonts` 数组声明的字体；编辑器通过浏览器 Local Font Access API 枚举系统字体，并始终保留手动输入回退。远程字体只接受 HTTPS 直接字体文件地址，必须显式等待加载成功，不能把 URL 当作字体名称或在失败时静默回退。
+- `fontFamily` 引用打印电脑已安装的字体或请求 `fonts` 数组声明的字体；编辑器通过浏览器 Local Font Access API 枚举系统字体，并始终保留手动输入回退。远程字体只接受公开 HTTPS 字体文件地址，首次下载后持久缓存到 Electron `userData/fonts`，预览和打印必须使用同一缓存文件；提供显式刷新和清除，不能把 URL 当作字体名称或在失败时静默回退。
 - 浏览器编辑器不能依赖 Node.js、Electron API 或远程 CDN，确保安装后离线可用。
 - 图片首版只接受 PNG、JPEG、WebP Data URL；不要让打印服务主动抓取远程 URL。
 - 不记录 Token、完整图片 Data URL 或打印正文。

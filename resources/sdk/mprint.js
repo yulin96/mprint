@@ -61,6 +61,18 @@
     },
     preview: function (printRequest) {
       return post('/v1/preview', printRequest)
+    },
+    cacheFont: function (font, options) {
+      return post('/v1/fonts/cache', {
+        font: font,
+        refresh: Boolean(options && options.refresh)
+      })
+    },
+    removeCachedFont: function (font) {
+      return post('/v1/fonts/cache/remove', { font: font })
+    },
+    clearFontCache: function () {
+      return post('/v1/fonts/cache/clear', {})
     }
   })
 })(typeof window !== 'undefined' ? window : globalThis)

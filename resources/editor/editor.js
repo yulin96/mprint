@@ -252,7 +252,7 @@ function removeLoadedRemoteFont(id) {
   loadedRemoteFonts.delete(id)
 }
 
-async function loadRemoteFont(font, index, status, button) {
+async function loadRemoteFont(font, index, status, button, refresh = false) {
   try {
     const normalized = normalizeRemoteFont(font, index)
     const duplicate = state.fonts.some(
@@ -262,22 +262,40 @@ async function loadRemoteFont(font, index, status, button) {
         candidate.fontWeight === normalized.fontWeight
     )
     if (duplicate) throw new Error('字体名称和字重与已有声明重复。')
-    removeLoadedRemoteFont(font.id)
-    status.textContent = '加载中…'
+    status.textContent = refresh ? '正在刷新缓存…' : '正在读取字体缓存…'
     status.className = 'remote-font-status'
     button.disabled = true
-    const source = `url(${JSON.stringify(normalized.src)}) format(${JSON.stringify(normalized.format)})`
+    const result = await window.MPrint.cacheFont(normalized, { refresh })
+    const source = `url(${JSON.stringify(result.fontUrl)}) format(${JSON.stringify(normalized.format)})`
     const face = new FontFace(normalized.fontFamily, source, {
       weight: String(normalized.fontWeight),
       style: 'normal'
     })
     await face.load()
+    removeLoadedRemoteFont(font.id)
     document.fonts.add(face)
     loadedRemoteFonts.set(font.id, face)
     fontFamilies.add(normalized.fontFamily)
-    status.textContent = '已加载，可用于画布预览'
+    status.textContent = result.source === 'download' ? '已下载并加载本地缓存' : '已从本地缓存加载'
     status.className = 'remote-font-status is-loaded'
     renderProperties()
+    renderCanvas()
+  } catch (error) {
+    status.textContent = error instanceof Error ? error.message : String(error)
+    status.className = 'remote-font-status is-error'
+  } finally {
+    button.disabled = false
+  }
+}
+
+async function clearRemoteFontCache(font, index, status, button) {
+  try {
+    const normalized = normalizeRemoteFont(font, index)
+    button.disabled = true
+    const result = await window.MPrint.removeCachedFont(normalized)
+    removeLoadedRemoteFont(font.id)
+    status.textContent = result.removed ? '本地缓存已清除' : '本地没有该字体缓存'
+    status.className = 'remote-font-status'
     renderCanvas()
   } catch (error) {
     status.textContent = error instanceof Error ? error.message : String(error)
@@ -303,11 +321,11 @@ function renderRemoteFonts() {
     card.className = 'remote-font-card'
     const status = document.createElement('span')
     status.className = 'remote-font-status'
-    status.textContent = loadedRemoteFonts.has(font.id) ? '已加载，可用于画布预览' : '尚未验证加载'
+    status.textContent = loadedRemoteFonts.has(font.id) ? '已从本地缓存加载' : '尚未加载字体缓存'
     if (loadedRemoteFonts.has(font.id)) status.classList.add('is-loaded')
     const resetLoadedState = () => {
       removeLoadedRemoteFont(font.id)
-      status.textContent = '配置已更改，请重新验证'
+      status.textContent = '配置已更改，请重新加载'
       status.className = 'remote-font-status'
     }
     const family = remoteFontControl(
@@ -372,8 +390,27 @@ function renderRemoteFonts() {
     const loadButton = document.createElement('button')
     loadButton.type = 'button'
     loadButton.className = 'remote-font-load'
-    loadButton.textContent = '验证加载'
+    loadButton.textContent = '加载'
+    loadButton.title = '优先读取本地缓存；没有缓存时才从远程下载'
     loadButton.addEventListener('click', () => void loadRemoteFont(font, index, status, loadButton))
+    const refreshButton = document.createElement('button')
+    refreshButton.type = 'button'
+    refreshButton.className = 'remote-font-load'
+    refreshButton.textContent = '刷新'
+    refreshButton.title = '重新下载远程字体并替换本地缓存'
+    refreshButton.addEventListener(
+      'click',
+      () => void loadRemoteFont(font, index, status, refreshButton, true)
+    )
+    const clearButton = document.createElement('button')
+    clearButton.type = 'button'
+    clearButton.className = 'remote-font-clear'
+    clearButton.textContent = '清缓存'
+    clearButton.title = '删除本机保存的字体文件，但保留当前字体声明'
+    clearButton.addEventListener(
+      'click',
+      () => void clearRemoteFontCache(font, index, status, clearButton)
+    )
     const deleteButton = document.createElement('button')
     deleteButton.type = 'button'
     deleteButton.className = 'remote-font-delete'
@@ -391,7 +428,7 @@ function renderRemoteFonts() {
         setMessage(`字体声明已删除，仍有 ${referenceCount} 个文字元素引用该字体。`, true)
       }
     })
-    actions.append(loadButton, deleteButton)
+    actions.append(loadButton, refreshButton, clearButton, deleteButton)
     footer.append(status, actions)
     card.append(family.wrapper, url.wrapper, weight.wrapper, format.wrapper, footer)
     remoteFontList.append(card)
@@ -923,6 +960,16 @@ byId('addRemoteFont').addEventListener('click', () => {
   renderProperties()
   remoteFontList.querySelector('.remote-font-card:last-child input')?.focus()
 })
+byId('clearFontCache').addEventListener('click', (event) =>
+  runAction(event.currentTarget, '清理中…', async () => {
+    const result = await window.MPrint.clearFontCache()
+    loadedRemoteFonts.forEach((face) => document.fonts.delete(face))
+    loadedRemoteFonts.clear()
+    renderRemoteFonts()
+    renderCanvas()
+    setMessage(`已清除 ${result.removed} 个字体缓存文件。`)
+  })
+)
 document.querySelectorAll('[data-position]').forEach((button) => {
   button.addEventListener('click', () => positionSelected(button.dataset.position))
 })
