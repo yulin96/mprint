@@ -1,6 +1,4 @@
 import type { AppSettings, PrinterSummary, ServiceStatus } from '../../shared/print-types'
-import '../assets/base.css'
-import '../assets/main.css'
 
 function element<T extends HTMLElement>(id: string): T {
   const value = document.getElementById(id)
