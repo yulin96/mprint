@@ -179,6 +179,15 @@ h1 {
   align-items: center;
   gap: 7px;
 }
+.paper-settings-copy {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 7px;
+}
+.paper-settings-label,
+.paper-settings-button strong {
+  line-height: 1;
+}
 .paper-settings-button svg,
 .popover-close svg {
   width: 16px;
@@ -428,6 +437,9 @@ h1 {
   justify-content: space-between;
   gap: 12px;
   margin-bottom: 10px;
+}
+.section-heading:has(> span) {
+  align-items: baseline;
 }
 .section-heading h2 {
   font-size: 14px;
@@ -740,7 +752,7 @@ h1 {
 }
 .geometry-heading {
   display: flex;
-  align-items: center;
+  align-items: baseline;
   justify-content: space-between;
   gap: 12px;
   font-size: 12px;
@@ -1004,7 +1016,7 @@ h1 {
   .message {
     display: none;
   }
-  .paper-settings-button span {
+  .paper-settings-label {
     display: none;
   }
   .default-paper-toggle {
