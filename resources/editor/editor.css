@@ -369,6 +369,38 @@ h1 {
   overflow-y: auto;
   border-right: 1px solid var(--line);
   background: rgba(250, 250, 250, 0.9);
+  scrollbar-gutter: stable;
+}
+.inspector,
+.element-list {
+  scrollbar-color: rgba(107, 101, 92, 0.52) transparent;
+  scrollbar-width: thin;
+}
+.inspector::-webkit-scrollbar,
+.element-list::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+.inspector::-webkit-scrollbar-track,
+.element-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+.inspector::-webkit-scrollbar-thumb,
+.element-list::-webkit-scrollbar-thumb {
+  min-height: 44px;
+  border: 2px solid transparent;
+  border-radius: 999px;
+  background: rgba(107, 101, 92, 0.42);
+  background-clip: padding-box;
+}
+.inspector::-webkit-scrollbar-thumb:hover,
+.element-list::-webkit-scrollbar-thumb:hover {
+  background: rgba(107, 101, 92, 0.68);
+  background-clip: padding-box;
+}
+.inspector::-webkit-scrollbar-button,
+.element-list::-webkit-scrollbar-button {
+  display: none;
 }
 .panel-section {
   padding: 15px 17px;
@@ -384,10 +416,102 @@ h1 {
 .section-heading h2 {
   font-size: 14px;
 }
+.section-heading > div {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
 .section-heading span {
   color: var(--muted);
   font-family: Consolas, monospace;
   font-size: 11px;
+}
+.section-action {
+  min-height: 28px;
+  padding: 0 9px;
+  border: 1px solid var(--line-strong);
+  border-radius: 7px;
+  background: #fff;
+  color: var(--coral-dark);
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 700;
+}
+.section-action:hover {
+  border-color: var(--coral);
+}
+.section-description {
+  margin: -3px 0 10px;
+  color: var(--muted);
+  font-size: 10px;
+}
+.remote-font-list {
+  display: grid;
+  gap: 8px;
+}
+.remote-font-empty {
+  padding: 12px;
+  border: 1px dashed var(--line-strong);
+  border-radius: 8px;
+  color: var(--muted);
+  font-size: 11px;
+  text-align: center;
+}
+.remote-font-card {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  padding: 10px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: rgba(255, 255, 255, 0.7);
+}
+.remote-font-card .field-wide {
+  grid-column: 1 / -1;
+}
+.remote-font-footer {
+  display: flex;
+  grid-column: 1 / -1;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.remote-font-status {
+  overflow: hidden;
+  color: var(--muted);
+  font-size: 10px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.remote-font-status.is-loaded {
+  color: var(--green);
+}
+.remote-font-status.is-error {
+  color: var(--danger);
+}
+.remote-font-actions {
+  display: flex;
+  flex: 0 0 auto;
+  gap: 4px;
+}
+.remote-font-actions button {
+  min-height: 25px;
+  padding: 0 6px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  cursor: pointer;
+  font-size: 10px;
+  font-weight: 700;
+}
+.remote-font-load {
+  color: var(--coral-dark);
+}
+.remote-font-delete {
+  color: var(--danger);
+}
+.remote-font-actions button:hover {
+  background: #f1efeb;
 }
 .form-grid {
   display: grid;
@@ -524,6 +648,7 @@ h1 {
   gap: 6px;
   max-height: 190px;
   overflow-y: auto;
+  scrollbar-gutter: stable;
 }
 .element-item {
   display: flex;
@@ -829,6 +954,8 @@ h1 {
   .default-paper-toggle,
   .popover-close,
   .field-link,
+  .section-action,
+  .remote-font-actions button,
   .add-actions button,
   .delete-button,
   .element-item,

@@ -15,6 +15,7 @@ const state = {
   page: { ...presets.card },
   landscape: false,
   useDefaultPageSize: false,
+  fonts: [],
   selectedId: null,
   items: [
     {
@@ -71,6 +72,8 @@ const paperPopover = byId('paperPopover')
 const canvasToolbar = byId('canvasToolbar')
 const elementList = byId('elementList')
 const elementCount = byId('elementCount')
+const remoteFontList = byId('remoteFontList')
+const remoteFontCount = byId('remoteFontCount')
 const propertyForm = byId('propertyForm')
 const propertiesSection = byId('propertiesSection')
 const pagePreset = byId('pagePreset')
@@ -82,6 +85,7 @@ const imageInput = byId('imageInput')
 const message = byId('message')
 let canvasScale = 1
 let paperPopoverCloseTimer
+const loadedRemoteFonts = new Map()
 
 function selectedItem() {
   return state.items.find((item) => item.id === state.selectedId)
@@ -93,10 +97,12 @@ function setMessage(text, isError = false) {
 }
 
 function requestPayload() {
+  const fonts = validatedRemoteFonts()
   return {
     page: { ...state.page },
     landscape: state.landscape,
     margin: 0,
+    fonts,
     texts: state.items
       .filter((item) => item.type === 'text')
       .map((item) => ({
@@ -131,6 +137,50 @@ function requestPayload() {
       useDefaultPageSize: state.useDefaultPageSize
     }
   }
+}
+
+function normalizeRemoteFont(font, index) {
+  const label = `远程字体 ${index + 1}`
+  const fontFamily = font.fontFamily.trim()
+  const src = font.src.trim()
+  if (!fontFamily) throw new Error(`${label}缺少字体名称。`)
+  if (
+    fontFamily.length > 200 ||
+    Array.from(fontFamily).some((character) => {
+      const codePoint = character.codePointAt(0) ?? 0
+      return codePoint < 32 || codePoint === 127
+    })
+  ) {
+    throw new Error(`${label}的字体名称无效。`)
+  }
+  if (!src) throw new Error(`${label}缺少字体链接。`)
+  if (src.length > 4096) throw new Error(`${label}的字体链接过长。`)
+  let url
+  try {
+    url = new URL(src)
+  } catch {
+    throw new Error(`${label}的链接无效。`)
+  }
+  if (url.protocol !== 'https:' || url.username || url.password) {
+    throw new Error(`${label}只支持不包含账号密码的 HTTPS 地址。`)
+  }
+  return {
+    fontFamily,
+    src: url.toString(),
+    fontWeight: font.fontWeight,
+    format: font.format
+  }
+}
+
+function validatedRemoteFonts() {
+  const keys = new Set()
+  return state.fonts.map((font, index) => {
+    const normalized = normalizeRemoteFont(font, index)
+    const key = `${normalized.fontFamily}\u0000${normalized.fontWeight}`
+    if (keys.has(key)) throw new Error(`远程字体 ${index + 1}的字体名称和字重与已有声明重复。`)
+    keys.add(key)
+    return normalized
+  })
 }
 
 function orientedPage() {
@@ -168,6 +218,186 @@ function control(label, value, onInput, options = {}) {
   return wrapper
 }
 
+function remoteFontControl(label, value, onChange, options = {}) {
+  const wrapper = document.createElement('label')
+  wrapper.className = `field${options.wide ? ' field-wide' : ''}`
+  const caption = document.createElement('span')
+  caption.textContent = label
+  let input
+  if (options.choices) {
+    input = document.createElement('select')
+    options.choices.forEach(([choiceValue, choiceLabel]) => {
+      const option = document.createElement('option')
+      option.value = choiceValue
+      option.textContent = choiceLabel
+      option.selected = String(value) === choiceValue
+      input.append(option)
+    })
+  } else {
+    input = document.createElement('input')
+    input.type = 'text'
+    input.value = String(value)
+    input.placeholder = options.placeholder || ''
+    input.autocomplete = 'off'
+  }
+  input.addEventListener('change', () => onChange(input.value))
+  wrapper.append(caption, input)
+  return { wrapper, input }
+}
+
+function removeLoadedRemoteFont(id) {
+  const face = loadedRemoteFonts.get(id)
+  if (!face) return
+  document.fonts.delete(face)
+  loadedRemoteFonts.delete(id)
+}
+
+async function loadRemoteFont(font, index, status, button) {
+  try {
+    const normalized = normalizeRemoteFont(font, index)
+    const duplicate = state.fonts.some(
+      (candidate, candidateIndex) =>
+        candidateIndex !== index &&
+        candidate.fontFamily.trim() === normalized.fontFamily &&
+        candidate.fontWeight === normalized.fontWeight
+    )
+    if (duplicate) throw new Error('字体名称和字重与已有声明重复。')
+    removeLoadedRemoteFont(font.id)
+    status.textContent = '加载中…'
+    status.className = 'remote-font-status'
+    button.disabled = true
+    const source = `url(${JSON.stringify(normalized.src)}) format(${JSON.stringify(normalized.format)})`
+    const face = new FontFace(normalized.fontFamily, source, {
+      weight: String(normalized.fontWeight),
+      style: 'normal'
+    })
+    await face.load()
+    document.fonts.add(face)
+    loadedRemoteFonts.set(font.id, face)
+    fontFamilies.add(normalized.fontFamily)
+    status.textContent = '已加载，可用于画布预览'
+    status.className = 'remote-font-status is-loaded'
+    renderProperties()
+    renderCanvas()
+  } catch (error) {
+    status.textContent = error instanceof Error ? error.message : String(error)
+    status.className = 'remote-font-status is-error'
+  } finally {
+    button.disabled = false
+  }
+}
+
+function renderRemoteFonts() {
+  remoteFontList.replaceChildren()
+  remoteFontCount.textContent = `${state.fonts.length} 个`
+  if (!state.fonts.length) {
+    const empty = document.createElement('div')
+    empty.className = 'remote-font-empty'
+    empty.textContent = '尚未声明远程字体'
+    remoteFontList.append(empty)
+    return
+  }
+
+  state.fonts.forEach((font, index) => {
+    const card = document.createElement('div')
+    card.className = 'remote-font-card'
+    const status = document.createElement('span')
+    status.className = 'remote-font-status'
+    status.textContent = loadedRemoteFonts.has(font.id) ? '已加载，可用于画布预览' : '尚未验证加载'
+    if (loadedRemoteFonts.has(font.id)) status.classList.add('is-loaded')
+    const resetLoadedState = () => {
+      removeLoadedRemoteFont(font.id)
+      status.textContent = '配置已更改，请重新验证'
+      status.className = 'remote-font-status'
+    }
+    const family = remoteFontControl(
+      '字体名称',
+      font.fontFamily,
+      (value) => {
+        resetLoadedState()
+        const previousFamily = font.fontFamily
+        font.fontFamily = value
+        state.items.forEach((item) => {
+          if (item.type === 'text' && item.fontFamily === previousFamily) item.fontFamily = value
+        })
+        renderProperties()
+        renderCanvas()
+      },
+      { placeholder: '例如 Brand Font' }
+    )
+    const url = remoteFontControl(
+      'HTTPS 字体链接',
+      font.src,
+      (value) => {
+        resetLoadedState()
+        font.src = value
+      },
+      { wide: true, placeholder: 'https://example.com/font.woff2' }
+    )
+    const weight = remoteFontControl(
+      '字重',
+      font.fontWeight,
+      (value) => {
+        resetLoadedState()
+        font.fontWeight = Number(value)
+      },
+      {
+        choices: [
+          ['400', '400 常规'],
+          ['500', '500 中等'],
+          ['700', '700 粗体']
+        ]
+      }
+    )
+    const format = remoteFontControl(
+      '格式',
+      font.format,
+      (value) => {
+        resetLoadedState()
+        font.format = value
+      },
+      {
+        choices: [
+          ['woff2', 'WOFF2'],
+          ['woff', 'WOFF'],
+          ['truetype', 'TTF'],
+          ['opentype', 'OTF']
+        ]
+      }
+    )
+    const footer = document.createElement('div')
+    footer.className = 'remote-font-footer'
+    const actions = document.createElement('div')
+    actions.className = 'remote-font-actions'
+    const loadButton = document.createElement('button')
+    loadButton.type = 'button'
+    loadButton.className = 'remote-font-load'
+    loadButton.textContent = '验证加载'
+    loadButton.addEventListener('click', () => void loadRemoteFont(font, index, status, loadButton))
+    const deleteButton = document.createElement('button')
+    deleteButton.type = 'button'
+    deleteButton.className = 'remote-font-delete'
+    deleteButton.textContent = '删除'
+    deleteButton.addEventListener('click', () => {
+      const referenceCount = state.items.filter(
+        (item) => item.type === 'text' && item.fontFamily === font.fontFamily
+      ).length
+      removeLoadedRemoteFont(font.id)
+      state.fonts.splice(index, 1)
+      renderRemoteFonts()
+      renderProperties()
+      renderCanvas()
+      if (referenceCount) {
+        setMessage(`字体声明已删除，仍有 ${referenceCount} 个文字元素引用该字体。`, true)
+      }
+    })
+    actions.append(loadButton, deleteButton)
+    footer.append(status, actions)
+    card.append(family.wrapper, url.wrapper, weight.wrapper, format.wrapper, footer)
+    remoteFontList.append(card)
+  })
+}
+
 function updateSelected(key, value) {
   const item = selectedItem()
   if (!item) return
@@ -178,7 +408,11 @@ function updateSelected(key, value) {
 
 function fillFontOptions(datalist) {
   datalist.replaceChildren()
-  Array.from(fontFamilies)
+  const availableFamilies = new Set([
+    ...fontFamilies,
+    ...state.fonts.map((font) => font.fontFamily.trim()).filter(Boolean)
+  ])
+  Array.from(availableFamilies)
     .sort((left, right) => left.localeCompare(right, 'zh-CN'))
     .forEach((family) => {
       const option = document.createElement('option')
@@ -250,8 +484,8 @@ function fontControl(item) {
   input.type = 'text'
   input.id = 'fontFamilyInput'
   input.value = item.fontFamily || 'Microsoft YaHei'
-  input.placeholder = '输入已安装字体名称'
-  input.title = '输入打印电脑已安装的字体名称'
+  input.placeholder = '输入或选择字体名称'
+  input.title = '选择系统字体或已声明的远程字体，也可以直接输入名称'
   input.setAttribute('list', 'fontFamilyOptions')
   input.autocomplete = 'off'
   const datalist = document.createElement('datalist')
@@ -673,6 +907,22 @@ useDefaultPageSize.addEventListener('change', () => {
 })
 byId('addText').addEventListener('click', addText)
 byId('addImage').addEventListener('click', () => imageInput.click())
+byId('addRemoteFont').addEventListener('click', () => {
+  if (state.fonts.length >= 10) {
+    setMessage('远程字体最多添加 10 个。', true)
+    return
+  }
+  state.fonts.push({
+    id: crypto.randomUUID(),
+    fontFamily: `Remote Font ${state.fonts.length + 1}`,
+    src: '',
+    fontWeight: 400,
+    format: 'woff2'
+  })
+  renderRemoteFonts()
+  renderProperties()
+  remoteFontList.querySelector('.remote-font-card:last-child input')?.focus()
+})
 document.querySelectorAll('[data-position]').forEach((button) => {
   button.addEventListener('click', () => positionSelected(button.dataset.position))
 })
@@ -697,14 +947,18 @@ byId('deleteElement').addEventListener('click', () => {
 })
 byId('copyButton').addEventListener('click', async (event) => {
   const button = event.currentTarget
-  await navigator.clipboard.writeText(
-    `await MPrint.print(${JSON.stringify(requestPayload(), null, 2)})`
-  )
-  setMessage('当前模板调用代码已复制。')
-  button.textContent = '已复制'
-  window.setTimeout(() => {
-    button.textContent = '复制当前代码'
-  }, 1500)
+  try {
+    await navigator.clipboard.writeText(
+      `await MPrint.print(${JSON.stringify(requestPayload(), null, 2)})`
+    )
+    setMessage('当前模板调用代码已复制。')
+    button.textContent = '已复制'
+    window.setTimeout(() => {
+      button.textContent = '复制当前代码'
+    }, 1500)
+  } catch (error) {
+    setMessage(error instanceof Error ? error.message : String(error), true)
+  }
 })
 byId('previewButton').addEventListener('click', (event) =>
   runAction(event.currentTarget, '正在打开…', async () => {
@@ -720,4 +974,5 @@ byId('printButton').addEventListener('click', (event) =>
   })
 )
 window.addEventListener('resize', renderCanvas)
+renderRemoteFonts()
 render(true)
