@@ -5,8 +5,8 @@ import { join } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { BrowserWindow } from 'electron'
 import type {
+  PrintElement,
   PrintFontFace,
-  PrintImageFit,
   PrintImageItem,
   PrintMargin,
   PrintPagePreset,
@@ -16,6 +16,7 @@ import type {
   PrintTextItem
 } from '../shared/print-types'
 import { copyCachedFont, fontFileExtension, normalizeFontFace } from './font-cache'
+import { normalizePrintElements, normalizePrintImage } from './print-elements'
 
 const pageSizes: Record<PrintPagePreset, { widthMm: number; heightMm: number }> = {
   A3: { widthMm: 297, heightMm: 420 },
@@ -30,16 +31,11 @@ const pageSizes: Record<PrintPagePreset, { widthMm: number; heightMm: number }> 
 }
 
 const dataImagePattern = /^data:(image\/(?:jpeg|jpg|png|webp));base64,([a-zA-Z0-9+/=\s]+)$/
-const rotations = new Set([0, 90, 180, 270])
-const imageFits = new Set<PrintImageFit>(['fill', 'contain', 'cover'])
 const imageLoadTimeoutMs = 30000
 const fontLoadTimeoutMs = 15000
 const printResultTimeoutMs = 15000
-const maxImages = 20
-const maxTexts = 200
 const maxFonts = 10
 const maxCopies = 5
-const maxDataImageBytes = 20 * 1024 * 1024
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null
@@ -75,87 +71,9 @@ function normalizeMargin(value: unknown): Required<Exclude<PrintMargin, number>>
   }
 }
 
-function normalizeImage(value: unknown, label: string): PrintImageItem {
-  if (!isRecord(value)) throw new Error(`${label} 参数不正确。`)
-  const src = typeof value.src === 'string' ? value.src.trim() : ''
-  const xMm = finite(value.xMm)
-  const yMm = finite(value.yMm)
-  const widthMm = finite(value.widthMm)
-  const heightMm = finite(value.heightMm)
-  if (
-    !src ||
-    xMm === null ||
-    yMm === null ||
-    !widthMm ||
-    !heightMm ||
-    widthMm <= 0 ||
-    heightMm <= 0
-  ) {
-    throw new Error(`${label} 必须包含有效的 src、xMm、yMm、widthMm 和 heightMm。`)
-  }
-  if (!dataImagePattern.test(src))
-    throw new Error(`${label} 首版只支持 PNG、JPEG 或 WebP Data URL。`)
-  if (Buffer.byteLength(src, 'utf8') > maxDataImageBytes) throw new Error(`${label} 超过 20MB。`)
-  const rotation = finite(value.rotate) ?? 0
-  return {
-    src,
-    xMm,
-    yMm,
-    widthMm,
-    heightMm,
-    fit: imageFits.has(value.fit as PrintImageFit) ? (value.fit as PrintImageFit) : 'fill',
-    rotate: rotations.has(rotation) ? (rotation as 0 | 90 | 180 | 270) : 0
-  }
-}
-
-function normalizeText(value: unknown, label: string): PrintTextItem {
-  if (!isRecord(value)) throw new Error(`${label} 参数不正确。`)
-  const xMm = finite(value.xMm)
-  const yMm = finite(value.yMm)
-  const widthMm = finite(value.widthMm)
-  const heightMm = finite(value.heightMm)
-  if (typeof value.content !== 'string' || xMm === null || yMm === null || !widthMm || !heightMm) {
-    throw new Error(`${label} 必须包含 content、xMm、yMm、widthMm 和 heightMm。`)
-  }
-  const rotation = finite(value.rotate) ?? 0
-  const align = value.align === 'center' || value.align === 'right' ? value.align : 'left'
-  const verticalAlign =
-    value.verticalAlign === 'middle' || value.verticalAlign === 'bottom'
-      ? value.verticalAlign
-      : 'top'
-  return {
-    content: value.content,
-    xMm,
-    yMm,
-    widthMm,
-    heightMm,
-    fontSizePt: Math.min(200, Math.max(1, finite(value.fontSizePt) ?? 12)),
-    fontFamily:
-      typeof value.fontFamily === 'string' && value.fontFamily.trim()
-        ? value.fontFamily.trim()
-        : 'Microsoft YaHei',
-    fontWeight:
-      value.fontWeight === 'bold' || value.fontWeight === 'normal'
-        ? value.fontWeight
-        : (finite(value.fontWeight) ?? 400),
-    color:
-      typeof value.color === 'string' && /^#[0-9a-fA-F]{3,8}$/.test(value.color)
-        ? value.color
-        : '#000000',
-    align,
-    verticalAlign,
-    lineHeight: Math.max(0.5, finite(value.lineHeight) ?? 1.2),
-    rotate: rotations.has(rotation) ? (rotation as 0 | 90 | 180 | 270) : 0
-  }
-}
-
 export function normalizePrintRequest(value: unknown): PrintRequest {
   if (!isRecord(value)) throw new Error('打印参数必须是 JSON 对象。')
-  const images = Array.isArray(value.images) ? value.images : []
-  const texts = Array.isArray(value.texts) ? value.texts : []
   const fonts = Array.isArray(value.fonts) ? value.fonts : []
-  if (images.length > maxImages) throw new Error(`images 最多 ${maxImages} 项。`)
-  if (texts.length > maxTexts) throw new Error(`texts 最多 ${maxTexts} 项。`)
   if (fonts.length > maxFonts) throw new Error(`fonts 最多 ${maxFonts} 项。`)
   const printer = isRecord(value.printer) ? value.printer : {}
   const copies = finite(printer.copies)
@@ -177,9 +95,10 @@ export function normalizePrintRequest(value: unknown): PrintRequest {
     offset: { xMm: finite(offset.xMm) ?? 0, yMm: finite(offset.yMm) ?? 0 },
     fonts: normalizedFonts,
     background:
-      value.background === undefined ? undefined : normalizeImage(value.background, 'background'),
-    images: images.map((item, index) => normalizeImage(item, `images[${index}]`)),
-    texts: texts.map((item, index) => normalizeText(item, `texts[${index}]`)),
+      value.background === undefined
+        ? undefined
+        : normalizePrintImage(value.background, 'background'),
+    elements: normalizePrintElements(value),
     printer: {
       silent: printer.silent !== false,
       deviceName:
@@ -246,8 +165,11 @@ function fontLoadRequests(request: PrintRequest): Array<{
   descriptor: string
   sample: string
 }> {
+  const texts = (request.elements ?? []).filter(
+    (element): element is Extract<PrintElement, { type: 'text' }> => element.type === 'text'
+  )
   return (request.fonts ?? []).map((font) => {
-    const sample = (request.texts ?? [])
+    const sample = texts
       .filter((text) => text.fontFamily === font.fontFamily)
       .map((text) => text.content)
       .join('')
@@ -275,7 +197,11 @@ async function prepareImages(request: PrintRequest, directory: string): Promise<
   return {
     ...request,
     background: request.background ? await prepare(request.background) : undefined,
-    images: await Promise.all((request.images ?? []).map(prepare))
+    elements: await Promise.all(
+      (request.elements ?? []).map(async (element): Promise<PrintElement> =>
+        element.type === 'image' ? { type: 'image', ...(await prepare(element)) } : element
+      )
+    )
   }
 }
 
@@ -291,8 +217,7 @@ async function prepareFonts(request: PrintRequest, directory: string): Promise<P
 }
 
 function renderImage(item: PrintImageItem, index: number): string {
-  const ratio = 300 / 25.4
-  return `<canvas data-image="${index}" data-src="${escapeHtml(item.src)}" data-fit="${item.fit}" data-rotate="${item.rotate}" width="${Math.round(item.widthMm * ratio)}" height="${Math.round(item.heightMm * ratio)}" style="position:absolute;left:${item.xMm}mm;top:${item.yMm}mm;width:${item.widthMm}mm;height:${item.heightMm}mm"></canvas>`
+  return `<img data-image="${index}" src="${escapeHtml(item.src)}" alt="" style="position:absolute;display:block;left:${item.xMm}mm;top:${item.yMm}mm;width:${item.widthMm}mm;height:${item.heightMm}mm;object-fit:${item.fit};object-position:center;transform:rotate(${item.rotate}deg);transform-origin:center">`
 }
 
 function renderText(item: PrintTextItem): string {
@@ -309,7 +234,13 @@ function renderHtml(request: PrintRequest, preview: boolean): string {
   const size = dimensions(request.page, request.landscape)
   const margin = request.margin as Required<Exclude<PrintMargin, number>>
   const offset = request.offset ?? {}
-  const images = [request.background, ...(request.images ?? [])].filter(Boolean) as PrintImageItem[]
+  let imageIndex = 0
+  const background = request.background ? renderImage(request.background, imageIndex++) : ''
+  const elements = (request.elements ?? [])
+    .map((element) =>
+      element.type === 'image' ? renderImage(element, imageIndex++) : renderText(element)
+    )
+    .join('')
   const cssPage = `${size.widthMm}mm ${size.heightMm}mm`
   const fontLoads = inlineJson(fontLoadRequests(request))
   return `<!doctype html><html><head><meta charset="utf-8"><style>
@@ -317,11 +248,11 @@ ${(request.fonts ?? []).map(renderFontFace).join('\n')}
 @page{${request.printer?.useDefaultPageSize ? '' : `size:${cssPage};`}margin:${margin.topMm}mm ${margin.rightMm}mm ${margin.bottomMm}mm ${margin.leftMm}mm}
 html,body{margin:0;padding:0}html{background:${preview ? '#e9e5dc' : '#fff'}}body{position:relative;width:${size.widthMm}mm;height:${size.heightMm}mm;margin:${preview ? '24px auto' : '0'};overflow:hidden;background:#fff;${preview ? 'box-shadow:0 16px 48px rgba(36,31,25,.18)' : ''};-webkit-print-color-adjust:exact;print-color-adjust:exact}
 </style></head><body><div style="position:absolute;left:${offset.xMm ?? 0}mm;top:${offset.yMm ?? 0}mm;width:100%;height:100%">
-${images.map(renderImage).join('')}${(request.texts ?? []).map(renderText).join('')}</div><script>
-function draw(canvas){return new Promise(resolve=>{const image=new Image();let done=false;const finish=(success,reason='')=>{if(done)return;done=true;clearTimeout(timer);resolve({index:Number(canvas.dataset.image),success,reason})};const timer=setTimeout(()=>finish(false,'图片加载超时'),${imageLoadTimeoutMs});image.onload=()=>{try{const context=canvas.getContext('2d');if(!context)return finish(false,'无法创建画布');const width=canvas.width,height=canvas.height,fit=canvas.dataset.fit,rotate=Number(canvas.dataset.rotate),quarter=rotate===90||rotate===270;context.fillStyle='#fff';context.fillRect(0,0,width,height);let drawWidth=quarter?height:width,drawHeight=quarter?width:height;if(fit==='contain'||fit==='cover'){const scale=fit==='contain'?Math.min(width/(quarter?image.naturalHeight:image.naturalWidth),height/(quarter?image.naturalWidth:image.naturalHeight)):Math.max(width/(quarter?image.naturalHeight:image.naturalWidth),height/(quarter?image.naturalWidth:image.naturalHeight));drawWidth=image.naturalWidth*scale;drawHeight=image.naturalHeight*scale}context.save();context.translate(width/2,height/2);context.rotate(rotate*Math.PI/180);context.drawImage(image,-drawWidth/2,-drawHeight/2,drawWidth,drawHeight);context.restore();finish(true)}catch(error){finish(false,String(error))}};image.onerror=()=>finish(false,'图片加载失败');image.src=canvas.dataset.src})}
+${background}${elements}</div><script>
+function loadImage(image){return new Promise(resolve=>{let done=false;const finish=(success,reason='')=>{if(done)return;done=true;clearTimeout(timer);resolve({index:Number(image.dataset.image),success,reason})};const timer=setTimeout(()=>finish(false,'图片加载超时'),${imageLoadTimeoutMs});const loaded=async()=>{try{if(typeof image.decode==='function')await image.decode();if(!image.naturalWidth||!image.naturalHeight)throw new Error('图片没有有效尺寸');finish(true)}catch(error){finish(false,error instanceof Error?error.message:String(error))}};if(image.complete){void loaded()}else{image.addEventListener('load',()=>void loaded(),{once:true});image.addEventListener('error',()=>finish(false,'图片加载失败'),{once:true})}})}
 const fontLoads=${fontLoads};
 async function loadFont(item){if(!document.fonts)throw new Error('当前打印环境不支持加载声明字体。');const faces=await Promise.race([document.fonts.load(item.descriptor,item.sample),new Promise((_,reject)=>setTimeout(()=>reject(new Error('字体加载超时：'+item.family)),${fontLoadTimeoutMs}))]);if(!faces.length)throw new Error('字体加载失败：'+item.family)}
-window.__mprintReady=(async()=>{const result=await Promise.all(Array.from(document.querySelectorAll('canvas')).map(draw));await Promise.all(fontLoads.map(loadFont));if(document.fonts)await document.fonts.ready;return result})()
+window.__mprintReady=(async()=>{const result=await Promise.all(Array.from(document.querySelectorAll('img[data-image]')).map(loadImage));await Promise.all(fontLoads.map(loadFont));if(document.fonts)await document.fonts.ready;return result})()
 </script></body></html>`
 }
 

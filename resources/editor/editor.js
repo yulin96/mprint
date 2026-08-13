@@ -158,35 +158,39 @@ function requestPayload(includeImagePlaceholders = false) {
     landscape: state.landscape,
     margin: 0,
     fonts,
-    texts: state.items
-      .filter((item) => item.type === 'text')
-      .map((item) => ({
-        content: item.content,
-        xMm: item.xMm,
-        yMm: item.yMm,
-        widthMm: item.widthMm,
-        heightMm: item.heightMm,
-        fontSizePt: item.fontSizePt,
-        fontFamily: item.fontFamily,
-        fontWeight: item.fontWeight,
-        color: item.color,
-        align: item.align,
-        verticalAlign: item.verticalAlign,
-        lineHeight: item.lineHeight,
-        rotate: item.rotate
-      })),
-    images: state.items
-      .filter((item) => item.type === 'image')
-      .map((item) => ({
-        src: includeImagePlaceholders ? '请替换为 PNG、JPEG 或 WebP Data URL' : '',
-        xMm: item.xMm,
-        yMm: item.yMm,
-        widthMm: item.widthMm,
-        heightMm: item.heightMm,
-        fit: item.fit,
-        rotate: item.rotate
-      }))
-      .filter((item) => item.src),
+    elements: state.items
+      .map((item) => {
+        if (item.type === 'image') {
+          if (!includeImagePlaceholders) return null
+          return {
+            type: 'image',
+            src: '请替换为 PNG、JPEG 或 WebP Data URL',
+            xMm: item.xMm,
+            yMm: item.yMm,
+            widthMm: item.widthMm,
+            heightMm: item.heightMm,
+            fit: item.fit,
+            rotate: item.rotate
+          }
+        }
+        return {
+          type: 'text',
+          content: item.content,
+          xMm: item.xMm,
+          yMm: item.yMm,
+          widthMm: item.widthMm,
+          heightMm: item.heightMm,
+          fontSizePt: item.fontSizePt,
+          fontFamily: item.fontFamily,
+          fontWeight: item.fontWeight,
+          color: item.color,
+          align: item.align,
+          verticalAlign: item.verticalAlign,
+          lineHeight: item.lineHeight,
+          rotate: item.rotate
+        }
+      })
+      .filter(Boolean),
     printer: {
       silent: true,
       copies: 1,

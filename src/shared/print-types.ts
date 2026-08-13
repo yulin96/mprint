@@ -54,6 +54,8 @@ export type PrintTextItem = {
   rotate?: 0 | 90 | 180 | 270
 }
 
+export type PrintElement = ({ type: 'image' } & PrintImageItem) | ({ type: 'text' } & PrintTextItem)
+
 export type PrintRequest = {
   page: PrintPageSize
   landscape?: boolean
@@ -64,6 +66,7 @@ export type PrintRequest = {
   }
   fonts?: PrintFontFace[]
   background?: PrintImageItem
+  elements?: PrintElement[]
   images?: PrintImageItem[]
   texts?: PrintTextItem[]
   printer?: {
