@@ -39,7 +39,7 @@
                 <path d="M4 3h12v14H4zM4 7h12M8 3v4" />
               </svg>
               <span>纸张</span>
-              <strong id="paperSummary">86 × 54 mm</strong>
+              <strong id="paperSummary">80 × 30 mm</strong>
             </button>
             <section
               id="paperPopover"
@@ -68,11 +68,26 @@
                 <label class="field field-wide">
                   <span>常用尺寸</span>
                   <select id="pagePreset">
-                    <option value="card">证卡 86 × 54 mm</option>
-                    <option value="A4">A4 210 × 297 mm</option>
-                    <option value="A5">A5 148 × 210 mm</option>
-                    <option value="A6">A6 105 × 148 mm</option>
-                    <option value="photo-6in">照片 102 × 152 mm</option>
+                    <optgroup label="标签纸">
+                      <option value="label-80x30">标签纸 8 × 3 cm（80 × 30 mm）</option>
+                      <option value="label-70x30">标签纸 7 × 3 cm（70 × 30 mm）</option>
+                      <option value="label-80x50">标签纸 8 × 5 cm（80 × 50 mm）</option>
+                      <option value="label-60x25">标签纸 6 × 2.5 cm（60 × 25 mm）</option>
+                      <option value="label-60x20">标签纸 6 × 2 cm（60 × 20 mm）</option>
+                      <option value="label-55x15">标签纸 5.5 × 1.5 cm（55 × 15 mm）</option>
+                      <option value="label-40x30">标签纸 4 × 3 cm（40 × 30 mm）</option>
+                      <option value="label-40x20">标签纸 4 × 2 cm（40 × 20 mm）</option>
+                      <option value="label-30x30">标签纸 3 × 3 cm（30 × 30 mm）</option>
+                      <option value="label-30x20">标签纸 3 × 2 cm（30 × 20 mm）</option>
+                      <option value="label-105x20">标签纸 10.5 × 2 cm（105 × 20 mm）</option>
+                    </optgroup>
+                    <optgroup label="标准纸张">
+                      <option value="card">证卡 86 × 54 mm</option>
+                      <option value="A4">A4 210 × 297 mm</option>
+                      <option value="A5">A5 148 × 210 mm</option>
+                      <option value="A6">A6 105 × 148 mm</option>
+                      <option value="photo-6in">照片 102 × 152 mm</option>
+                    </optgroup>
                     <option value="custom">自定义</option>
                   </select>
                 </label>

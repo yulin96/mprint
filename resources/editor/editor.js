@@ -1,6 +1,17 @@
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
 
 const presets = {
+  'label-80x30': { widthMm: 80, heightMm: 30 },
+  'label-70x30': { widthMm: 70, heightMm: 30 },
+  'label-80x50': { widthMm: 80, heightMm: 50 },
+  'label-60x25': { widthMm: 60, heightMm: 25 },
+  'label-60x20': { widthMm: 60, heightMm: 20 },
+  'label-55x15': { widthMm: 55, heightMm: 15 },
+  'label-40x30': { widthMm: 40, heightMm: 30 },
+  'label-40x20': { widthMm: 40, heightMm: 20 },
+  'label-30x30': { widthMm: 30, heightMm: 30 },
+  'label-30x20': { widthMm: 30, heightMm: 20 },
+  'label-105x20': { widthMm: 105, heightMm: 20 },
   card: { widthMm: 86, heightMm: 54 },
   A4: { widthMm: 210, heightMm: 297 },
   A5: { widthMm: 148, heightMm: 210 },
@@ -14,7 +25,7 @@ const fontFamilies = new Set(['Microsoft YaHei', 'SimSun', 'SimHei', 'Arial'])
 let availableSystemFontCount = 0
 
 const state = {
-  page: { ...presets.card },
+  page: { ...presets['label-80x30'] },
   landscape: false,
   useDefaultPageSize: false,
   fonts: [],
@@ -24,8 +35,8 @@ const state = {
       id: crypto.randomUUID(),
       type: 'text',
       content: 'mprint',
-      xMm: 8,
-      yMm: 8,
+      xMm: 5,
+      yMm: 3,
       widthMm: 70,
       heightMm: 12,
       fontSizePt: 20,
@@ -41,10 +52,10 @@ const state = {
       id: crypto.randomUUID(),
       type: 'text',
       content: '本地打印模板',
-      xMm: 8,
-      yMm: 25,
+      xMm: 5,
+      yMm: 18,
       widthMm: 70,
-      heightMm: 8,
+      heightMm: 7,
       fontSizePt: 10,
       fontFamily: 'Microsoft YaHei',
       fontWeight: 400,
