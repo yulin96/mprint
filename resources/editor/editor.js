@@ -81,6 +81,7 @@ const useDefaultPageSize = byId('useDefaultPageSize')
 const imageInput = byId('imageInput')
 const message = byId('message')
 let canvasScale = 1
+let paperPopoverCloseTimer
 
 function selectedItem() {
   return state.items.find((item) => item.id === state.selectedId)
@@ -340,14 +341,23 @@ function renderProperties() {
     )
   }
 
-  const details = document.createElement('details')
-  details.className = 'advanced-properties'
-  const summary = document.createElement('summary')
+  const accordion = document.createElement('div')
+  accordion.className = 'advanced-properties t-acc'
+  accordion.dataset.open = 'false'
+  const summary = document.createElement('button')
+  summary.type = 'button'
+  summary.className = 't-acc-head'
+  summary.setAttribute('aria-expanded', 'false')
   const summaryTitle = document.createElement('strong')
   summaryTitle.textContent = '位置与尺寸'
   const summaryMeta = document.createElement('span')
+  summaryMeta.className = 'advanced-properties-meta'
   summaryMeta.textContent = `${item.xMm}, ${item.yMm} · ${item.widthMm} × ${item.heightMm} mm`
-  summary.append(summaryTitle, summaryMeta)
+  const chevron = document.createElement('span')
+  chevron.className = 't-acc-chevron'
+  chevron.setAttribute('aria-hidden', 'true')
+  chevron.innerHTML = '<svg viewBox="0 0 16 16"><path d="M4 6.5L8 10.5L12 6.5" /></svg>'
+  summary.append(summaryTitle, summaryMeta, chevron)
   const geometryGrid = document.createElement('div')
   geometryGrid.className = 'form-grid geometry-grid'
   geometryGrid.append(
@@ -368,8 +378,25 @@ function renderProperties() {
       ]
     })
   )
-  details.append(summary, geometryGrid)
-  propertyForm.append(details)
+  const panel = document.createElement('div')
+  panel.className = 't-acc-panel'
+  panel.id = `geometry-${item.id}`
+  panel.inert = true
+  panel.setAttribute('aria-hidden', 'true')
+  summary.setAttribute('aria-controls', panel.id)
+  const panelInner = document.createElement('div')
+  panelInner.className = 't-acc-panel-inner'
+  panelInner.append(geometryGrid)
+  panel.append(panelInner)
+  summary.addEventListener('click', () => {
+    const open = accordion.dataset.open === 'true'
+    accordion.dataset.open = String(!open)
+    summary.setAttribute('aria-expanded', String(!open))
+    panel.inert = open
+    panel.setAttribute('aria-hidden', String(open))
+  })
+  accordion.append(summary, panel)
+  propertyForm.append(accordion)
 }
 
 function renderList() {
@@ -578,10 +605,29 @@ async function runAction(button, busyText, action) {
 pageWidth.value = String(state.page.widthMm)
 pageHeight.value = String(state.page.heightMm)
 function setPaperPopover(open) {
-  paperPopover.hidden = !open
+  if (!open && !paperPopover.classList.contains('is-open')) return
+  window.clearTimeout(paperPopoverCloseTimer)
   paperSettingsButton.setAttribute('aria-expanded', String(open))
+  paperPopover.setAttribute('aria-hidden', String(!open))
+  paperPopover.inert = !open
+  if (open) {
+    paperPopover.classList.remove('is-closing')
+    paperPopover.classList.add('is-open')
+    return
+  }
+  paperPopover.classList.remove('is-open')
+  paperPopover.classList.add('is-closing')
+  const closeMs =
+    parseFloat(
+      getComputedStyle(document.documentElement).getPropertyValue('--dropdown-close-dur')
+    ) || 150
+  paperPopoverCloseTimer = window.setTimeout(() => {
+    paperPopover.classList.remove('is-closing')
+  }, closeMs)
 }
-paperSettingsButton.addEventListener('click', () => setPaperPopover(paperPopover.hidden))
+paperSettingsButton.addEventListener('click', () => {
+  setPaperPopover(!paperPopover.classList.contains('is-open'))
+})
 byId('closePaperPopover').addEventListener('click', () => {
   setPaperPopover(false)
   paperSettingsButton.focus()
@@ -590,7 +636,7 @@ document.addEventListener('click', (event) => {
   if (!paperControl.contains(event.target)) setPaperPopover(false)
 })
 document.addEventListener('keydown', (event) => {
-  if (event.key === 'Escape' && !paperPopover.hidden) {
+  if (event.key === 'Escape' && paperPopover.classList.contains('is-open')) {
     setPaperPopover(false)
     paperSettingsButton.focus()
   }

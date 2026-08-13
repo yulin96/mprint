@@ -12,6 +12,19 @@
   --green: #267451;
   --green-soft: #e5f3eb;
   --danger: #a6382c;
+  --duration-micro: 80ms;
+  --duration-quick: 150ms;
+  --duration-fast: 250ms;
+  --ease-smooth-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --dropdown-open-dur: 250ms;
+  --dropdown-close-dur: 150ms;
+  --dropdown-pre-scale: 0.97;
+  --dropdown-closing-scale: 0.99;
+  --dropdown-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --acc-expand: 250ms;
+  --acc-collapse: 250ms;
+  --acc-chevron: 250ms;
+  --acc-ease: cubic-bezier(0.22, 1, 0.36, 1);
   font-family: 'Microsoft YaHei UI', 'PingFang SC', 'Segoe UI', sans-serif;
 }
 
@@ -65,6 +78,28 @@ textarea {
 }
 button {
   color: inherit;
+}
+.button,
+.default-paper-toggle,
+.popover-close,
+.field-link,
+.add-actions button,
+.delete-button,
+.element-item,
+.canvas-toolbar button,
+.t-acc-head {
+  transition:
+    color var(--duration-quick) var(--ease-smooth-out),
+    border-color var(--duration-quick) var(--ease-smooth-out),
+    background-color var(--duration-quick) var(--ease-smooth-out),
+    box-shadow var(--duration-quick) var(--ease-smooth-out),
+    transform var(--duration-micro) var(--ease-smooth-out);
+}
+.button:not(:disabled):active,
+.popover-close:active,
+.add-actions button:active,
+.canvas-toolbar button:active {
+  transform: translateY(1px);
 }
 button:focus-visible,
 input:focus-visible,
@@ -204,8 +239,51 @@ h1 {
   background: #fff;
   box-shadow: 0 18px 50px rgba(67, 58, 46, 0.2);
 }
-.paper-popover[hidden] {
-  display: none;
+
+.t-dropdown {
+  transform-origin: top left;
+  transform: scale(var(--dropdown-pre-scale));
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    transform var(--dropdown-open-dur) var(--dropdown-ease),
+    opacity var(--dropdown-open-dur) var(--dropdown-ease);
+  will-change: transform, opacity;
+}
+.t-dropdown[data-origin='top-right'] {
+  transform-origin: top right;
+}
+.t-dropdown[data-origin='top-center'] {
+  transform-origin: top center;
+}
+.t-dropdown[data-origin='bottom-left'] {
+  transform-origin: bottom left;
+}
+.t-dropdown[data-origin='bottom-center'] {
+  transform-origin: bottom center;
+}
+.t-dropdown[data-origin='bottom-right'] {
+  transform-origin: bottom right;
+}
+
+.t-dropdown.is-open {
+  transform: scale(1);
+  opacity: 1;
+  pointer-events: auto;
+}
+.t-dropdown.is-closing {
+  transform: scale(var(--dropdown-closing-scale));
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    transform var(--dropdown-close-dur) var(--dropdown-ease),
+    opacity var(--dropdown-close-dur) var(--dropdown-ease);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .t-dropdown {
+    transition: none !important;
+  }
 }
 .popover-heading {
   display: flex;
@@ -270,6 +348,10 @@ h1 {
   background: var(--ink);
   color: #fff;
   box-shadow: 0 8px 22px rgba(36, 33, 28, 0.16);
+}
+.button-primary:hover {
+  background: #000;
+  box-shadow: 0 10px 26px rgba(36, 33, 28, 0.22);
 }
 
 .workspace {
@@ -489,35 +571,90 @@ h1 {
   padding-top: 10px;
   border-top: 1px solid var(--line);
 }
-.advanced-properties summary {
+.advanced-properties .t-acc-head {
   display: flex;
   align-items: center;
-  justify-content: space-between;
   gap: 12px;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
   cursor: pointer;
   font-size: 12px;
   font-weight: 700;
-  list-style: none;
+  text-align: left;
 }
-.advanced-properties summary::-webkit-details-marker {
-  display: none;
+.advanced-properties .t-acc-head:hover {
+  color: var(--coral-dark);
 }
-.advanced-properties summary span {
+.advanced-properties-meta {
+  margin-left: auto;
   color: var(--muted);
   font-family: Consolas, monospace;
   font-size: 10px;
   font-weight: 400;
 }
-.advanced-properties summary::after {
-  width: 6px;
-  height: 6px;
-  border-right: 1.5px solid var(--muted);
-  border-bottom: 1.5px solid var(--muted);
-  content: '';
-  transform: rotate(45deg);
+.t-acc-chevron svg {
+  width: 14px;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.5;
 }
-.advanced-properties[open] summary::after {
-  transform: rotate(225deg);
+
+/* grid-template-rows 0fr → 1fr gives a clean height animation
+   with no JS measurement; the inner element clips overflow. */
+.t-acc-panel {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows var(--acc-collapse) var(--acc-ease);
+}
+.t-acc[data-open='true'] .t-acc-panel {
+  grid-template-rows: 1fr;
+  transition: grid-template-rows var(--acc-expand) var(--acc-ease);
+}
+.t-acc-panel-inner {
+  overflow: hidden;
+  opacity: 0;
+  filter: blur(2px);
+  transition:
+    opacity var(--acc-collapse) var(--acc-ease),
+    filter var(--acc-collapse) var(--acc-ease);
+}
+.t-acc[data-open='true'] .t-acc-panel-inner {
+  opacity: 1;
+  filter: blur(0);
+  transition:
+    opacity var(--acc-expand) var(--acc-ease),
+    filter var(--acc-expand) var(--acc-ease);
+}
+/* Flip the chevron vertically to turn the "v" into a "^".
+   scaleY(-1) about the centre passes through a flat line at
+   the midpoint (same look as a `d:` path morph) but animates
+   in every browser, unlike CSS `d:` morphing (Chromium only).
+   The chevron path is symmetric about the 16x16 viewBox
+   centre, so the flip lands exactly on the "^"; non-scaling
+   -stroke keeps the stroke width constant through the flip. */
+.t-acc-chevron {
+  display: inline-flex;
+  transform: scaleY(1);
+  transform-origin: center;
+  transition: transform var(--acc-chevron) var(--acc-ease);
+}
+.t-acc-chevron path {
+  vector-effect: non-scaling-stroke;
+}
+.t-acc[data-open='true'] .t-acc-chevron {
+  transform: scaleY(-1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .t-acc-panel,
+  .t-acc-panel-inner,
+  .t-acc-chevron {
+    transition: none !important;
+  }
 }
 .geometry-grid {
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -684,5 +821,19 @@ h1 {
   }
   .workspace {
     height: 556px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .button,
+  .default-paper-toggle,
+  .popover-close,
+  .field-link,
+  .add-actions button,
+  .delete-button,
+  .element-item,
+  .canvas-toolbar button,
+  .t-acc-head {
+    transition: none !important;
   }
 }
